@@ -24,7 +24,7 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "           inner join especialidades E on C.especialidades_id_especialidad=E.id_especialidad\n" +
            "           inner join tipocita T on C.tipocita_idtipocita=T.idtipocita\n" +
            "           inner join usuario D on C.doctor_dni1=D.dni\n" +
-           "           where fecha >= current_date() and citacancelada=0 and paciente_dni=?1")
+           "           where fecha >= current_date() and citacancelada=0 and estadoscita_idestados=1 and paciente_dni=?1")
    List<Citadto> historialCitasAgendadas(String dniPaciente);
 
     @Query(value = "SELECT * FROM telesystem_2.cita WHERE doctor_dni1=\"12345678\" " +
