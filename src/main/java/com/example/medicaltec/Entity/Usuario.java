@@ -1,6 +1,5 @@
 package com.example.medicaltec.Entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
@@ -12,12 +11,11 @@ import java.io.Serializable;
 @Setter
 @Entity
 @Table(name = "usuario")
-@JsonIgnoreProperties({"foto", "fotonombre", "fotocontenttype","contrasena"})
 public class Usuario implements Serializable {
     @Id
     @Column(name = "dni", nullable = false, length = 8)
     @NotBlank(message = "Es un campo obligatorio")
-    @Size(max = 8, message = "Deber se un numero de DNI valido de maximo 8 digitos")
+    @Size(max = 8, message = "Deber ser un número de DNI valido de máximo 8 digitos")
     private String id;
 
     @Column(name = "contrasena", nullable = false, length = 100)
@@ -40,12 +38,9 @@ public class Usuario implements Serializable {
     @Size(max = 45, message = "El apellido ingresado es muy extenso. Maximo 45 caracteres")
     private String apellido;
 
-    @Column(name = "edad", nullable = false)
+    @Column(name = "fechanacimiento", nullable = false)
     @NotNull(message = "Es un campo obligatorio")
-    @Digits(integer= 3, fraction= 0, message = "La edad debe ser un numero entero positivo")
-    @Max(value = 120,message = "La edad debe ser un numero entero positivo")
-    @Min(value = 0, message = "La edad debe ser un numero entero positivo")
-    private Integer edad;
+    private String fechaNacimiento;
 
     @Column(name = "telefono", nullable = false, length = 9)
     @NotBlank(message = "Es un campo obligatorio")
@@ -90,19 +85,12 @@ public class Usuario implements Serializable {
     @Column(name = "modooscuro")
     private Boolean modooscuro;
 
-    @Column(name = "foto")
-    private byte[] foto;
-
     @Column(name = "modoregistro", length = 45)
     private String modoregistro;
 
     @Column(name = "ceduladoctor", length = 45)
     private String ceduladoctor;
 
-    @Column(name = "fotonombre")
-    private String fotonombre;
-    @Column(name = "fotocontenttype")
-    private String fotocontenttype;
 
     @Column(name = "enabled")
     private Boolean enabled;

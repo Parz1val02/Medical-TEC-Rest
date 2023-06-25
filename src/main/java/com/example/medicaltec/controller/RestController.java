@@ -2,7 +2,9 @@ package com.example.medicaltec.controller;
 import com.example.medicaltec.Entity.Cita;
 import com.example.medicaltec.Entity.Sede;
 import com.example.medicaltec.Entity.Usuario;
+import com.example.medicaltec.dto.CitaDoctor;
 import com.example.medicaltec.dto.Citadto;
+import com.example.medicaltec.dto.CitasSede;
 import com.example.medicaltec.dto.SedeDto;
 import com.example.medicaltec.function.Regex;
 import com.example.medicaltec.repository.CitaRepository;
@@ -38,8 +40,16 @@ public class RestController {
     public List<Citadto> returnCitas(@RequestParam("dni")String dni){
         return citaRepository.historialCitasAgendadas(dni);
     }
+    @GetMapping(value = "/citasDoctor")
+    public List<CitaDoctor> returnCitasDoctor(@RequestParam("dni")String dni){
+        return citaRepository.historialCitasDoctor(dni);
+    }
+    @GetMapping(value = "/citasSede")
+    public List<CitasSede> returnCitasSede(@RequestParam("idSede")String idSede){
+        return citaRepository.historialCitasSede(idSede);
+    }
     @PostMapping(value = "/cambioSede")
-    public ResponseEntity<HashMap<String, Object>> crearProducto(@RequestParam("dni") String dni,
+    public ResponseEntity<HashMap<String, Object>> CambiarSede(@RequestParam("dni") String dni,
                                                                  @RequestParam("id")String id){
         Regex regex = new Regex();
         HashMap<String, Object> rspta = new HashMap<>();
