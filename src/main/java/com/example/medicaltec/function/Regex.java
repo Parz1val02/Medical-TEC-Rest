@@ -36,4 +36,11 @@ public class Regex {
         Matcher matcher = pattern.matcher(input);
         return matcher.find();
     }
+
+    public boolean horaValid(String input){
+        String regex = "^(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(input);
+        return matcher.find();
+    }
 }

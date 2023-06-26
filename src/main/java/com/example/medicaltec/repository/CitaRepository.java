@@ -46,4 +46,16 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
 
    @Query(nativeQuery = true, value = "SELECT DATE_FORMAT(hora, '%H:%i') FROM cita where fecha=?1 and doctor_dni1=?2")
    List<String> horasCitasProgramdas(String fecha, String doctorDni);
+
+   @Modifying
+   @Transactional
+   @Query(nativeQuery = true, value = "INSERT INTO cita (citacancelada, sedes_idsedes, especialidades_id_especialidad, estadoscita_idestados, receta_idreceta, formapago, modalidad, tipocita_idtipocita, fecha, hora, paciente_dni, doctor_dni1, pagada, examen_medico_idexamen)\n" +
+           "values(0,?1,?2,1,null,?3,?4,?5,?6,?7,?8,?9,0,null)")
+   void guardarConsultaMedica(String idSede, String idEspecialidad, String formapago, String modalidad, String idTipoCita, String fecha, String hora, String dniPaciente, String dniDoctor);
+
+   @Modifying
+   @Transactional
+   @Query(nativeQuery = true, value = "INSERT INTO cita (citacancelada, sedes_idsedes, especialidades_id_especialidad, estadoscita_idestados, receta_idreceta, formapago, modalidad, tipocita_idtipocita, fecha, hora, paciente_dni, doctor_dni1, pagada, examen_medico_idexamen)\n" +
+           "values(0,?1,null,1,null,?2,?3,?4,?5,?6,?7,?8,0,?9)")
+   void guardarExamenMedico(String idSede, String formapago, String modalidad, String idTipoCita, String fecha, String hora, String dniPaciente, String dniDoctor, String idExamenMedico);
 }
