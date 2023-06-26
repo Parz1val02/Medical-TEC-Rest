@@ -12,4 +12,6 @@ public interface SedeRepository extends JpaRepository<Sede,Integer> {
     @Transactional
     @Query(nativeQuery = true, value ="update usuario set  sedes_idsedes=?1 where dni=?2" )
     void cambiarSede(Integer idSede, String dni);
+    @Query(nativeQuery = true, value = "SELECT idsedes FROM sedes where idsedes=?1")
+    String verificaridSede(String id);
 }

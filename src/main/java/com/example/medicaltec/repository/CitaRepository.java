@@ -4,9 +4,11 @@ import com.example.medicaltec.Entity.Cita;
 import com.example.medicaltec.dto.CitaDoctor;
 import com.example.medicaltec.dto.Citadto;
 import com.example.medicaltec.dto.CitasSede;
+import lombok.extern.log4j.Log4j;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -41,4 +43,7 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "where str_to_date(fecha, '%d-%m-%Y')>= current_date() and citacancelada=0 and estadoscita_idestados=1 and C.sedes_idsedes=?1")
    List<CitasSede> historialCitasSede(String idSede);
 
+
+   @Query(nativeQuery = true, value = "SELECT DATE_FORMAT(hora, '%H:%i') FROM cita where fecha=?1 and doctor_dni1=?2")
+   List<String> horasCitasProgramdas(String fecha, String doctorDni);
 }
