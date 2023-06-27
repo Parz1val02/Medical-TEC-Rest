@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @RestController
 @RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_VALUE + "; charset=utf-8")
 @CrossOrigin
@@ -46,15 +49,21 @@ public class RController {
 
     @GetMapping(value = "/citas")
     public List<Citadto> returnCitas(@RequestParam("dni")String dni){
-        return citaRepository.historialCitasAgendadas(dni);
+        List<Citadto> consultas = citaRepository.historialCitasAgendadas(dni);
+        List<Citadto> examenes = citaRepository.historialExamenesAgendados(dni);
+        return Stream.concat(consultas.stream(), examenes.stream()).toList();
     }
     @GetMapping(value = "/citasDoctor")
     public List<CitaDoctor> returnCitasDoctor(@RequestParam("dni")String dni){
-        return citaRepository.historialCitasDoctor(dni);
+        List<CitaDoctor> consultas = citaRepository.historialCitasDoctor(dni);
+        List<CitaDoctor> examenes = citaRepository.historialExamenesDoctor(dni);
+        return Stream.concat(consultas.stream(), examenes.stream()).toList();
     }
     @GetMapping(value = "/citasSede")
     public List<CitasSede> returnCitasSede(@RequestParam("idSede")String idSede){
-        return citaRepository.historialCitasSede(idSede);
+        List<CitasSede> consultas = citaRepository.historialCitasSede(idSede);
+        List<CitasSede> examenes = citaRepository.historialExamenesSede(idSede);
+        return Stream.concat(consultas.stream(), examenes.stream()).toList();
     }
     @PostMapping(value = "/cambioSede")
     public ResponseEntity<HashMap<String, Object>> CambiarSede(@RequestParam("dni") String dni,
