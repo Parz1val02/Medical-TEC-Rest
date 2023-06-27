@@ -364,4 +364,11 @@ public class RController {
         rspta.put("msg", "Error en el ingreso de parámetros");
         return ResponseEntity.badRequest().body(rspta);
     }
+    /*@GetMapping("/meetingLink")
+    public String enlaceReunionVirtual(){
+
+
+        //MeetingLinkGenerator meet = new MeetingLinkGenerator();
+        //meet.generateScheduledMeetingLink(,"salapersonal", );
+    }*/
 }
