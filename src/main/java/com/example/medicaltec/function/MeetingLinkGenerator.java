@@ -3,6 +3,7 @@ package com.example.medicaltec.function;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,21 +35,21 @@ public class MeetingLinkGenerator {
         System.out.println(scheduledMeetingLink);*/
 
 
-    public static String generateScheduledMeetingLink(String appId, String roomName, Date startTime, Date endTime, String secretKey) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("context", generateContextClaim(roomName, startTime, endTime));
+        public  String generateScheduledMeetingLink(String appId, String roomName, LocalTime startTime, LocalTime endTime, String secretKey) {
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("context", generateContextClaim(roomName, startTime, endTime));
 
         String token = Jwts.builder()
                 .setClaims(claims)
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
 
-        String link = "https://8x8.vc/" + roomName + "#" + token;
+        String link = "https://8x8.vc/" + appId + "/" + roomName + "#" + token;
 
         return link;
     }
 
-    private static Map<String, Object> generateContextClaim(String roomName, Date startTime, Date endTime) {
+    private static Map<String, Object> generateContextClaim(String roomName, LocalTime startTime, LocalTime endTime) {
         Map<String, Object> context = new HashMap<>();
         context.put("user", generateUserClaim());
         context.put("group", roomName);

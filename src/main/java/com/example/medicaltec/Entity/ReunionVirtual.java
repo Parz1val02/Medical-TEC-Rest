@@ -4,29 +4,23 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.sql.Date;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "reunion_virtual")
-public class ReunionVirtual {
+public class ReunionVirtual implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idreunion_virtual", nullable = false)
     private Integer id;
 
-
-    @Column(name = "fecha", length = 45)
-    private String fecha;
-
-
-    @Column(name = "horainicio")
-    private Date horaInicio;
-
-    @Column(name = "horafin")
-    private Date horaFin;
+    @ManyToOne
+    @JoinColumn(name = "cita_idcita")
+    private Cita cita;
 
 
     @Column(name = "token",  length = 500)
@@ -34,14 +28,7 @@ public class ReunionVirtual {
 
 
     @Column(name = "room",  length = 200)
-    private String appID;
-
-    @ManyToOne
-    @JoinColumn(name = "usuario_dni", nullable = false)
-    private Usuario doctorDNI;
+    private String room;
 
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_dni1", nullable = false)
-    private Usuario pacienteDNI;
 }
