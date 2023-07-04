@@ -77,18 +77,24 @@ public class RController {
         HashMap<String, Object> rspta = new HashMap<>();
         try{
             int idInt = Integer.parseInt(id);
-            if(regex.dniValid(dni)){
-                Optional<Usuario> optProduct = usuarioRepository.findById(dni);
-                if(optProduct.isPresent()){
-                    rspta.put("msg", "Se actualizó la sede con éxito");
-                    sedeRepository.cambiarSede(idInt,dni);
-                    return ResponseEntity.ok(rspta);
+            String sede = sedeRepository.verificaridSede(id);
+            if(sede!=null){
+                if(regex.dniValid(dni)){
+                    Optional<Usuario> optProduct = usuarioRepository.findById(dni);
+                    if(optProduct.isPresent()){
+                        rspta.put("msg", "Se actualizó la sede con éxito");
+                        sedeRepository.cambiarSede(idInt,dni);
+                        return ResponseEntity.ok(rspta);
+                    }else{
+                        rspta.put("msg", "Error: el dni ingresado no existe");
+                        return ResponseEntity.badRequest().body(rspta);
+                    }
                 }else{
-                    rspta.put("msg", "Error: el dni ingresado no existe");
+                    rspta.put("msg", "Error: el dni debe tener un formato válido");
                     return ResponseEntity.badRequest().body(rspta);
                 }
             }else{
-                rspta.put("msg", "Error: el dni debe tener un formato válido");
+                rspta.put("msg", "Error: el id ingresado no existe");
                 return ResponseEntity.badRequest().body(rspta);
             }
         }catch (NumberFormatException e){
@@ -325,8 +331,9 @@ public class RController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
             LocalDate parsedDate = LocalDate.parse(fecha, formatter);
             LocalDate currentDate = LocalDate.now();
-            if(parsedDate.isBefore(currentDate)) {
-                rspta.put("msg", "Ingresar una fecha a partir de hoy");
+            LocalDate tomorrow = currentDate.plusDays(1);
+            if(parsedDate.isBefore(tomorrow)) {
+                rspta.put("msg", "Ingresar una fecha futura");
                 return ResponseEntity.badRequest().body(rspta);
             }else{
                 if(especialidadId!=null){
@@ -707,7 +714,7 @@ public class RController {
             LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
             String[] values = horasDoctor.getDias().split(",");
             // Iterate through the dates
-            LocalDate currentDateGa = startDate;
+            LocalDate currentDateGa = currentDate.plusDays(1);
             while (!currentDateGa.isAfter(endDate)) {
                 String dayWeekGa = currentDateGa.getDayOfWeek().name();
                 String diaSemanaGa = fechasFunciones.traducirDia(dayWeekGa);
@@ -754,8 +761,11 @@ public class RController {
             //Continuar
             horariosMes.setDiasDelMes(listaHorariosDia);
             horariosMes.setDoctorDni(dni);
+        } else {
+            rspta.put("msg", "Error en el ingreso de parámetros");
+            return ResponseEntity.badRequest().body(rspta);
         }
         rspta.put("horariosMes", horariosMes);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(rspta);
+        return ResponseEntity.ok(rspta);
     }
 }
