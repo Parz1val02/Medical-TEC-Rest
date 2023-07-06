@@ -242,7 +242,6 @@ public class RController {
                         }
                         ArrayList<String> modalidad = new ArrayList<>();
                         modalidad.add("Presencial");
-                        modalidad.add("Virtual");
                         rspta.put("modalidades", modalidad);
                         rspta.put("infoDoctores", superDoctors);
                         return ResponseEntity.ok(rspta);
@@ -323,10 +322,10 @@ public class RController {
         if(tipoCitaId!=null){
             idTipoCita = tipoCitaRepository.verificarTipoCita(tipoCitaId);
         }
-        if(doctorDni!=null){
+        if(regex.dniValid(doctorDni)){
             dniDoctor = usuarioRepository.validarUsuario(doctorDni);
         }
-        if(pacienteDni!=null){
+        if(regex.dniValid(pacienteDni)){
             dniPaciente = usuarioRepository.validarUsuario(pacienteDni);
         }
         if(idSede!=null && idTipoCita!=null  && dniDoctor!=null && dniPaciente!=null && regex.fechaValid(fecha) && regex.horaValid(hora) && (modalidad.equals("Presencial") || modalidad.equals("Virtual"))){
@@ -504,18 +503,13 @@ public class RController {
                                 "                        \"</html>\";\n";
                         //correoConEstilos.sendEmailEstilos(usu.get().getEmail(),"enlace",contenido);
                         try {
-
                             correoConEstilos.sendEmailEstilos(usu.get().getEmail(),"enlace",contenido1);
                         } catch (MessagingException e) {
                             // Manejar la excepción en caso de que ocurra un error al enviar el correo
                             e.printStackTrace();
-
                         }
                         citaRepository.guardarConsultaMedica(idSede,idEspecialidad,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor);
-
-
                         rspta.put("msg", "Consulta médica agendada de manera exitosa");
-
                         reunionVirtualRepository.guardarReunion(enlace1,  citaRepository.ultimaCita().getId());
                         return ResponseEntity.ok(rspta);
                     }else{
@@ -528,9 +522,6 @@ public class RController {
                         String formapago = null;
                         if(modalidad.equals("Presencial")){
                             formapago = "En caja";
-                        }
-                        if(modalidad.equals("Virtual")){
-                            formapago = "Tarjeta";
                         }
                         citaRepository.guardarExamenMedico(idSede,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor,idExamen);
                         rspta.put("msg", "Examen médico agendado de manera exitosa");
@@ -564,75 +555,88 @@ public class RController {
     }*/
     @GetMapping("/doctores")
     public ResponseEntity<HashMap<String, Object>> listaDoctores(@RequestParam("dni") String dni){
+        Regex regex = new Regex();
         HashMap<String, Object> rspta = new HashMap<>();
-        TimeListGenerationExample timeListGenerationExample = new TimeListGenerationExample();
-        Fechas fechasFunciones = new Fechas();
-        ArrayList<LocalDate> fechasAtienden = new ArrayList<>();
-        LocalDate currentDate = LocalDate.now();
-        int year = currentDate.getYear();
-        String month = currentDate.getMonth().name();
-        int numMonth = fechasFunciones.traducirMesNumero(month);
-        String mes = fechasFunciones.traducirMes(month);
-        Horasdoctor horasDoctor = horasDoctorRepository.DniMes(dni,mes.toLowerCase());
-        HorariosMes horariosMes = new HorariosMes();
-        if(horasDoctor!=null){
-            LocalDate startDate = LocalDate.of(year,numMonth, 1);
-            // Get the last day of the month
-            LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
-            String[] values = horasDoctor.getDias().split(",");
-            // Iterate through the dates
-            LocalDate currentDateGa = currentDate.plusDays(1);
-            while (!currentDateGa.isAfter(endDate)) {
-                String dayWeekGa = currentDateGa.getDayOfWeek().name();
-                String diaSemanaGa = fechasFunciones.traducirDia(dayWeekGa);
-                for (String value : values) {
-                    if(value.equalsIgnoreCase(diaSemanaGa)){
-                        fechasAtienden.add(currentDateGa);
-                        System.out.println(dni + ": " + currentDateGa);
-                        break;
-                    }
-                }
-                currentDateGa = currentDateGa.plusDays(1);
-            }
-            //continuar
-            List<HorariosDia> listaHorariosDia = new ArrayList<>();
-            LocalTime start = horasDoctor.getHorainicio();
-            LocalTime end = horasDoctor.getHorafin();
-            LocalTime skip = horasDoctor.getHoralibre();
-            for(int x=0;x<fechasAtienden.size();x++){
-                // Create a formatter with the desired date pattern
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-                String dateString = fechasAtienden.get(x).format(formatter);
-                List<String> horasOcupadas = citaRepository.horasCitasProgramdas(dateString, dni);
-                List<LocalTime> horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
-                for(int j=0;j<horasOcupadas.size();j++){
-                    String timeString = horasOcupadas.get(j);
-                    String formatPattern = "HH:mm";
-                    // Create a formatter based on the desired format pattern
-                    DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern(formatPattern);
-                    // Parse the time string to a LocalTime object
-                    LocalTime hora = LocalTime.parse(timeString, formatter2);
-                    for(int k=0;k<horasTrabajo.size();k++){
-                        if(hora.equals(horasTrabajo.get(k))){
-                            LocalTime aa = horasTrabajo.remove(k);
-                            break;
+        String dniDoctor = null;
+        if(regex.dniValid(dniDoctor)){
+            dniDoctor = usuarioRepository.validarUsuario(dni);
+            if(dniDoctor!=null){
+                TimeListGenerationExample timeListGenerationExample = new TimeListGenerationExample();
+                Fechas fechasFunciones = new Fechas();
+                ArrayList<LocalDate> fechasAtienden = new ArrayList<>();
+                LocalDate currentDate = LocalDate.now();
+                int year = currentDate.getYear();
+                String month = currentDate.getMonth().name();
+                int numMonth = fechasFunciones.traducirMesNumero(month);
+                String mes = fechasFunciones.traducirMes(month);
+                Horasdoctor horasDoctor = horasDoctorRepository.DniMes(dni,mes.toLowerCase());
+                HorariosMes horariosMes = new HorariosMes();
+                if(horasDoctor!=null){
+                    LocalDate startDate = LocalDate.of(year,numMonth, 1);
+                    // Get the last day of the month
+                    LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+                    String[] values = horasDoctor.getDias().split(",");
+                    // Iterate through the dates
+                    LocalDate currentDateGa = currentDate.plusDays(1);
+                    while (!currentDateGa.isAfter(endDate)) {
+                        String dayWeekGa = currentDateGa.getDayOfWeek().name();
+                        String diaSemanaGa = fechasFunciones.traducirDia(dayWeekGa);
+                        for (String value : values) {
+                            if(value.equalsIgnoreCase(diaSemanaGa)){
+                                fechasAtienden.add(currentDateGa);
+                                System.out.println(dni + ": " + currentDateGa);
+                                break;
+                            }
                         }
+                        currentDateGa = currentDateGa.plusDays(1);
                     }
+                    //continuar
+                    List<HorariosDia> listaHorariosDia = new ArrayList<>();
+                    LocalTime start = horasDoctor.getHorainicio();
+                    LocalTime end = horasDoctor.getHorafin();
+                    LocalTime skip = horasDoctor.getHoralibre();
+                    for(int x=0;x<fechasAtienden.size();x++){
+                        // Create a formatter with the desired date pattern
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                        String dateString = fechasAtienden.get(x).format(formatter);
+                        List<String> horasOcupadas = citaRepository.horasCitasProgramdas(dateString, dni);
+                        List<LocalTime> horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
+                        for(int j=0;j<horasOcupadas.size();j++){
+                            String timeString = horasOcupadas.get(j);
+                            String formatPattern = "HH:mm";
+                            // Create a formatter based on the desired format pattern
+                            DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern(formatPattern);
+                            // Parse the time string to a LocalTime object
+                            LocalTime hora = LocalTime.parse(timeString, formatter2);
+                            for(int k=0;k<horasTrabajo.size();k++){
+                                if(hora.equals(horasTrabajo.get(k))){
+                                    LocalTime aa = horasTrabajo.remove(k);
+                                    break;
+                                }
+                            }
+                        }
+                        //Continuar
+                        HorariosDia horariosDia = new HorariosDia();
+                        horariosDia.setDia(fechasAtienden.get(x));
+                        horariosDia.setHoras(horasTrabajo);
+                        listaHorariosDia.add(horariosDia);
+                    }
+                    //Continuar
+                    horariosMes.setDiasDelMes(listaHorariosDia);
+                    horariosMes.setDoctorDni(dni);
+                } else {
+                    rspta.put("msg", "Error en el ingreso de parámetros");
+                    return ResponseEntity.badRequest().body(rspta);
                 }
-                //Continuar
-                HorariosDia horariosDia = new HorariosDia();
-                horariosDia.setDia(fechasAtienden.get(x));
-                horariosDia.setHoras(horasTrabajo);
-                listaHorariosDia.add(horariosDia);
+                rspta.put("horariosMes", horariosMes);
+                return ResponseEntity.ok(rspta);
+            }else{
+                rspta.put("msg", "Error: el dni ingresado no existe");
+                return ResponseEntity.badRequest().body(rspta);
             }
-            //Continuar
-            horariosMes.setDiasDelMes(listaHorariosDia);
-            horariosMes.setDoctorDni(dni);
-        } else {
-            rspta.put("msg", "Error en el ingreso de parámetros");
+        }else{
+            rspta.put("msg", "Error: el dni debe tener un formato válido");
             return ResponseEntity.badRequest().body(rspta);
         }
-        rspta.put("horariosMes", horariosMes);
-        return ResponseEntity.ok(rspta);
     }
 }
