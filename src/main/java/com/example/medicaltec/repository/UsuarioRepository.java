@@ -16,13 +16,13 @@ public interface UsuarioRepository extends JpaRepository<Usuario,String> {
             "            from usuario u \n" +
             "            inner join especialidades e on (u.especialidades_id_especialidad=e.id_especialidad)\n" +
             "            where u.roles_idroles = 1 and u.sedes_idsedes=?1 and u.enabled=1 and u.especialidades_id_especialidad=?2")
-    List<DoctorDto> obtenerDoctoresSedeEspecialidad(Integer idSede, Integer idEspecialidad);
+    List<DoctorDto> obtenerDoctoresSedeEspecialidad(String idSede, String idEspecialidad);
 
     @Query(nativeQuery = true,value = "select dni as `Dni`, email as `Email`, nombre as `Nombre`, apellido as `Apellido`, sexo as `Sexo`, e.nombre_especialidad as `Especialidad` , ceduladoctor as `Cedula`\n" +
             "            from usuario u \n" +
             "            inner join especialidades e on (u.especialidades_id_especialidad=e.id_especialidad)\n" +
             "            where u.roles_idroles = 1 and u.sedes_idsedes=?1 and u.enabled=1")
-    List<DoctorDto> obtenerDoctoresSede(Integer idSede);
+    List<DoctorDto> obtenerDoctoresSede(String idSede);
 
     @Query(nativeQuery = true, value = "SELECT dni FROM usuario where dni=?1")
     String validarUsuario(String dni);

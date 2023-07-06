@@ -5,7 +5,6 @@ import com.example.medicaltec.function.*;
 import com.example.medicaltec.repository.*;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.hibernate.event.spi.SaveOrUpdateEvent;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.Base64;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,18 +79,24 @@ public class RController {
         HashMap<String, Object> rspta = new HashMap<>();
         try{
             int idInt = Integer.parseInt(id);
-            if(regex.dniValid(dni)){
-                Optional<Usuario> optProduct = usuarioRepository.findById(dni);
-                if(optProduct.isPresent()){
-                    rspta.put("msg", "Se actualizó la sede con éxito");
-                    sedeRepository.cambiarSede(idInt,dni);
-                    return ResponseEntity.ok(rspta);
+            String sede = sedeRepository.verificaridSede(id);
+            if(sede!=null){
+                if(regex.dniValid(dni)){
+                    Optional<Usuario> optProduct = usuarioRepository.findById(dni);
+                    if(optProduct.isPresent()){
+                        rspta.put("msg", "Se actualizó la sede con éxito");
+                        sedeRepository.cambiarSede(idInt,dni);
+                        return ResponseEntity.ok(rspta);
+                    }else{
+                        rspta.put("msg", "Error: el dni ingresado no existe");
+                        return ResponseEntity.badRequest().body(rspta);
+                    }
                 }else{
-                    rspta.put("msg", "Error: el dni ingresado no existe");
+                    rspta.put("msg", "Error: el dni debe tener un formato válido");
                     return ResponseEntity.badRequest().body(rspta);
                 }
             }else{
-                rspta.put("msg", "Error: el dni debe tener un formato válido");
+                rspta.put("msg", "Error: el id ingresado no existe");
                 return ResponseEntity.badRequest().body(rspta);
             }
         }catch (NumberFormatException e){
@@ -126,7 +133,7 @@ public class RController {
                 if(especialidadId!=null){
                     String idEspecialidad = especialidadRepository.verificarEspecialidad(especialidadId);
                     if(idEspecialidad!=null){
-                        List<DoctorDto> doctores = usuarioRepository.obtenerDoctoresSedeEspecialidad(Integer.parseInt(idSede), Integer.parseInt(idEspecialidad));
+                        List<DoctorDto> doctores = usuarioRepository.obtenerDoctoresSedeEspecialidad(idSede,idEspecialidad);
                         ArrayList<DoctorDto> doctoresAtienden = new ArrayList<>();
                         ArrayList<Horasdoctor> horasdoctorsAtienden = new ArrayList<>();
                         String dayWeek = parsedDate.getDayOfWeek().name();
@@ -186,7 +193,7 @@ public class RController {
                 } else if (examenId!=null) {
                     String idExamen = examenMedicoRepository.verificarExamen(examenId);
                     if (idExamen != null) {
-                        List<DoctorDto> doctores = usuarioRepository.obtenerDoctoresSede(Integer.parseInt(idSede));
+                        List<DoctorDto> doctores = usuarioRepository.obtenerDoctoresSede(idSede);
                         ArrayList<DoctorDto> doctoresAtienden = new ArrayList<>();
                         ArrayList<Horasdoctor> horasdoctorsAtienden = new ArrayList<>();
                         String dayWeek = parsedDate.getDayOfWeek().name();
@@ -303,7 +310,7 @@ public class RController {
                                                             @RequestParam("modalidad")String modalidad,
                                                             @RequestParam("doctorDni")String doctorDni,
                                                             @RequestParam("hora")String hora,
-                                                            @RequestParam("pacienteDni")String pacienteDni) {
+                                                            @RequestParam("pacienteDni")String pacienteDni){
         Regex regex = new Regex();
         HashMap<String, Object> rspta = new HashMap<>();
         String idSede = null;
@@ -326,8 +333,9 @@ public class RController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
             LocalDate parsedDate = LocalDate.parse(fecha, formatter);
             LocalDate currentDate = LocalDate.now();
-            if(parsedDate.isBefore(currentDate)) {
-                rspta.put("msg", "Ingresar una fecha a partir de hoy");
+            LocalDate tomorrow = currentDate.plusDays(1);
+            if(parsedDate.isBefore(tomorrow)) {
+                rspta.put("msg", "Ingresar una fecha futura");
                 return ResponseEntity.badRequest().body(rspta);
             }else{
                 if(especialidadId!=null){
@@ -503,6 +511,9 @@ public class RController {
                             e.printStackTrace();
 
                         }
+                        citaRepository.guardarConsultaMedica(idSede,idEspecialidad,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor);
+
+
                         rspta.put("msg", "Consulta médica agendada de manera exitosa");
 
                         reunionVirtualRepository.guardarReunion(enlace1,  citaRepository.ultimaCita().getId());
@@ -551,4 +562,77 @@ public class RController {
         return enlace;
 
     }*/
+    @GetMapping("/doctores")
+    public ResponseEntity<HashMap<String, Object>> listaDoctores(@RequestParam("dni") String dni){
+        HashMap<String, Object> rspta = new HashMap<>();
+        TimeListGenerationExample timeListGenerationExample = new TimeListGenerationExample();
+        Fechas fechasFunciones = new Fechas();
+        ArrayList<LocalDate> fechasAtienden = new ArrayList<>();
+        LocalDate currentDate = LocalDate.now();
+        int year = currentDate.getYear();
+        String month = currentDate.getMonth().name();
+        int numMonth = fechasFunciones.traducirMesNumero(month);
+        String mes = fechasFunciones.traducirMes(month);
+        Horasdoctor horasDoctor = horasDoctorRepository.DniMes(dni,mes.toLowerCase());
+        HorariosMes horariosMes = new HorariosMes();
+        if(horasDoctor!=null){
+            LocalDate startDate = LocalDate.of(year,numMonth, 1);
+            // Get the last day of the month
+            LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+            String[] values = horasDoctor.getDias().split(",");
+            // Iterate through the dates
+            LocalDate currentDateGa = currentDate.plusDays(1);
+            while (!currentDateGa.isAfter(endDate)) {
+                String dayWeekGa = currentDateGa.getDayOfWeek().name();
+                String diaSemanaGa = fechasFunciones.traducirDia(dayWeekGa);
+                for (String value : values) {
+                    if(value.equalsIgnoreCase(diaSemanaGa)){
+                        fechasAtienden.add(currentDateGa);
+                        System.out.println(dni + ": " + currentDateGa);
+                        break;
+                    }
+                }
+                currentDateGa = currentDateGa.plusDays(1);
+            }
+            //continuar
+            List<HorariosDia> listaHorariosDia = new ArrayList<>();
+            LocalTime start = horasDoctor.getHorainicio();
+            LocalTime end = horasDoctor.getHorafin();
+            LocalTime skip = horasDoctor.getHoralibre();
+            for(int x=0;x<fechasAtienden.size();x++){
+                // Create a formatter with the desired date pattern
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                String dateString = fechasAtienden.get(x).format(formatter);
+                List<String> horasOcupadas = citaRepository.horasCitasProgramdas(dateString, dni);
+                List<LocalTime> horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
+                for(int j=0;j<horasOcupadas.size();j++){
+                    String timeString = horasOcupadas.get(j);
+                    String formatPattern = "HH:mm";
+                    // Create a formatter based on the desired format pattern
+                    DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern(formatPattern);
+                    // Parse the time string to a LocalTime object
+                    LocalTime hora = LocalTime.parse(timeString, formatter2);
+                    for(int k=0;k<horasTrabajo.size();k++){
+                        if(hora.equals(horasTrabajo.get(k))){
+                            LocalTime aa = horasTrabajo.remove(k);
+                            break;
+                        }
+                    }
+                }
+                //Continuar
+                HorariosDia horariosDia = new HorariosDia();
+                horariosDia.setDia(fechasAtienden.get(x));
+                horariosDia.setHoras(horasTrabajo);
+                listaHorariosDia.add(horariosDia);
+            }
+            //Continuar
+            horariosMes.setDiasDelMes(listaHorariosDia);
+            horariosMes.setDoctorDni(dni);
+        } else {
+            rspta.put("msg", "Error en el ingreso de parámetros");
+            return ResponseEntity.badRequest().body(rspta);
+        }
+        rspta.put("horariosMes", horariosMes);
+        return ResponseEntity.ok(rspta);
+    }
 }
