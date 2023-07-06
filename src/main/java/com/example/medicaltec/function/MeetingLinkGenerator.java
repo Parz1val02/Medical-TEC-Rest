@@ -2,7 +2,8 @@ package com.example.medicaltec.function;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class MeetingLinkGenerator {
         System.out.println(scheduledMeetingLink);*/
 
 
-        public  String generateScheduledMeetingLink(String appId, String roomName, LocalTime startTime, LocalTime endTime, String secretKey) {
+        public String generateScheduledMeetingLink(String appId, String roomName, LocalTime startTime, LocalTime endTime, String secretKey) {
             Map<String, Object> claims = new HashMap<>();
             claims.put("context", generateContextClaim(roomName, startTime, endTime));
 
@@ -64,5 +65,7 @@ public class MeetingLinkGenerator {
         // Customize user claim if needed
         return user;
     }
+
+
 }
 

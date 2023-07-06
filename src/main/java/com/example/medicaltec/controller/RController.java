@@ -5,6 +5,7 @@ import com.example.medicaltec.function.*;
 import com.example.medicaltec.repository.*;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.hibernate.event.spi.SaveOrUpdateEvent;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -338,14 +340,27 @@ public class RController {
                         if(modalidad.equals("Virtual")){
                             formapago = "Tarjeta";
                         }
+
+                        citaRepository.guardarConsultaMedica(idSede,idEspecialidad,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor);
+
                         //correo
-                        MeetingLinkGenerator meet = new MeetingLinkGenerator();
+                        ClasePrueba meet = new ClasePrueba();
                         LocalTime endTime =LocalTime.parse(hora).plusMinutes(30) ; //sumarle 30 min a la hora
                         endTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 
-                        String enlace = meet.generateScheduledMeetingLink(
+                        /*String enlace = meet.generateScheduledMeetingLink(
                                 "vpaas-magic-cookie-64547877cba34cdb892bd4fb58d11524","salapersonal",
-                                LocalTime.parse(hora), endTime, "vpaas-magic-cookie-64547877cba34cdb892bd4fb58d11524/aae24d" );
+                                LocalTime.parse(hora), endTime, "vpaas-magic-cookie-64547877cba34cdb892bd4fb58d11524/aae24d");*/
+
+                        String domain = "https://meet.jit.si/";
+
+                        String enlace1;
+                        try {
+                            enlace1= meet.generateJitsiMeetURL(domain,"sala personal",LocalTime.parse(hora), 30);
+                            System.out.println(enlace1);
+                        } catch (UnsupportedEncodingException e) {
+                            throw new RuntimeException(e);
+                        }
 
                         Optional<Usuario> usu = usuarioRepository.findById(dniPaciente);
                         String contenido1  = "\"<!DOCTYPE html>\\n\" +\n" +
@@ -417,7 +432,7 @@ public class RController {
                                 "                        \"              <td style=\\\"padding:30px;background-color:#ffffff;\\\">\\n\" +\n" +
                                 "                        \"                <h1 style=\\\"margin-top:0;margin-bottom:16px;font-size:26px;line-height:32px;font-weight:bold;letter-spacing:-0.02em;\\\">Bienvenido a la plataforma de Medical-TEC!</h1>\\n\" +\n" +
                                 "                        \"                <p style=\\\"margin:0;\\\"> TEXTO DE BIENVENIDA <a href=\\\"http://www.example.com/\\\" style=\\\"color:#e50d70;text-decoration:underline;\\\"></a></p>\\n\" +\n" +
-                                "                        \" <p style=\\\"margin:0;\\\"> Su contraseña predeterminada es \" + contrasena + \" </p> \" +\n" +
+                                "                        \" <p style=\\\"margin:0;\\\"> El enlace de su cita virtual es el siguiente: " + enlace1 + " </p> \" +\n" +
                                 "                        \"              </td>\\n\" +\n" +
                                 "                        \"            </tr>\\n\" +\n" +
                                 "                        \"            <tr>\\n\" +\n" +
@@ -488,10 +503,9 @@ public class RController {
                             e.printStackTrace();
 
                         }
-                        citaRepository.guardarConsultaMedica(idSede,idEspecialidad,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor);
-
-
                         rspta.put("msg", "Consulta médica agendada de manera exitosa");
+
+                        reunionVirtualRepository.guardarReunion(enlace1,  citaRepository.ultimaCita().getId());
                         return ResponseEntity.ok(rspta);
                     }else{
                         rspta.put("msg", "Error en el ingreso de parámetros");
@@ -507,158 +521,6 @@ public class RController {
                         if(modalidad.equals("Virtual")){
                             formapago = "Tarjeta";
                         }
-                        //aqui enviar el correo
-                        //ReunionVirtual reunionVirtual= reunionVirtualRepository.ReuPorCita(Integer.valueOf(idCita));
-                        //Optional<Cita> optCita = citaRepository.findById(Integer.valueOf(idCita));
-                        //optCita.get();
-                        MeetingLinkGenerator meet = new MeetingLinkGenerator();
-                        LocalTime endTime =LocalTime.parse(hora).plusMinutes(30) ; //sumarle 30 min a la hora
-                        endTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-
-                        String enlace = meet.generateScheduledMeetingLink(
-                                "vpaas-magic-cookie-64547877cba34cdb892bd4fb58d11524","salapersonal",
-                                LocalTime.parse(hora), endTime, "vpaas-magic-cookie-64547877cba34cdb892bd4fb58d11524/aae24d" );
-
-                        Optional<Usuario> usu = usuarioRepository.findById(dniPaciente);
-                        String contenido2 = "<!DOCTYPE html>\\n\" +\n" +
-                                "                        \"<html lang=\\\"en\\\" xmlns=\\\"http://www.w3.org/1999/xhtml\\\" xmlns:o=\\\"urn:schemas-microsoft-com:office:office\\\">\\n\" +\n" +
-                                "                        \"<head>\\n\" +\n" +
-                                "                        \"  <meta charset=\\\"utf-8\\\">\\n\" +\n" +
-                                "                        \"  <meta name=\\\"viewport\\\" content=\\\"width=device-width,initial-scale=1\\\">\\n\" +\n" +
-                                "                        \"  <meta name=\\\"x-apple-disable-message-reformatting\\\">\\n\" +\n" +
-                                "                        \"  <title></title>\\n\" +\n" +
-                                "                        \"  <!--[if mso]>\\n\" +\n" +
-                                "                        \"  <style>\\n\" +\n" +
-                                "                        \"    table {border-collapse:collapse;border-spacing:0;border:none;margin:0;}\\n\" +\n" +
-                                "                        \"    div, td {padding:0;}\\n\" +\n" +
-                                "                        \"    div {margin:0 !important;}\\n\" +\n" +
-                                "                        \"  </style>\\n\" +\n" +
-                                "                        \"  <noscript>\\n\" +\n" +
-                                "                        \"    <xml>\\n\" +\n" +
-                                "                        \"      <o:OfficeDocumentSettings>\\n\" +\n" +
-                                "                        \"        <o:PixelsPerInch>96</o:PixelsPerInch>\\n\" +\n" +
-                                "                        \"      </o:OfficeDocumentSettings>\\n\" +\n" +
-                                "                        \"    </xml>\\n\" +\n" +
-                                "                        \"  </noscript>\\n\" +\n" +
-                                "                        \"  <![endif]-->\\n\" +\n" +
-                                "                        \"  <style>\\n\" +\n" +
-                                "                        \"    table, td, div, h1, p {\\n\" +\n" +
-                                "                        \"      font-family: Arial, sans-serif;\\n\" +\n" +
-                                "                        \"    }\\n\" +\n" +
-                                "                        \"    @media screen and (max-width: 530px) {\\n\" +\n" +
-                                "                        \"      .unsub {\\n\" +\n" +
-                                "                        \"        display: block;\\n\" +\n" +
-                                "                        \"        padding: 8px;\\n\" +\n" +
-                                "                        \"        margin-top: 14px;\\n\" +\n" +
-                                "                        \"        border-radius: 6px;\\n\" +\n" +
-                                "                        \"        background-color: #555555;\\n\" +\n" +
-                                "                        \"        text-decoration: none !important;\\n\" +\n" +
-                                "                        \"        font-weight: bold;\\n\" +\n" +
-                                "                        \"      }\\n\" +\n" +
-                                "                        \"      .col-lge {\\n\" +\n" +
-                                "                        \"        max-width: 100% !important;\\n\" +\n" +
-                                "                        \"      }\\n\" +\n" +
-                                "                        \"    }\\n\" +\n" +
-                                "                        \"    @media screen and (min-width: 531px) {\\n\" +\n" +
-                                "                        \"      .col-sml {\\n\" +\n" +
-                                "                        \"        max-width: 27% !important;\\n\" +\n" +
-                                "                        \"      }\\n\" +\n" +
-                                "                        \"      .col-lge {\\n\" +\n" +
-                                "                        \"        max-width: 73% !important;\\n\" +\n" +
-                                "                        \"      }\\n\" +\n" +
-                                "                        \"    }\\n\" +\n" +
-                                "                        \"  </style>\\n\" +\n" +
-                                "                        \"</head>\\n\" +\n" +
-                                "                        \"<body style=\\\"margin:0;padding:0;word-spacing:normal;background-color:#939297;\\\">\\n\" +\n" +
-                                "                        \"  <div role=\\\"article\\\" aria-roledescription=\\\"email\\\" lang=\\\"en\\\" style=\\\"text-size-adjust:100%;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;background-color:#939297;\\\">\\n\" +\n" +
-                                "                        \"    <table role=\\\"presentation\\\" style=\\\"width:100%;border:none;border-spacing:0;\\\">\\n\" +\n" +
-                                "                        \"      <tr>\\n\" +\n" +
-                                "                        \"        <td align=\\\"center\\\" style=\\\"padding:0;\\\">\\n\" +\n" +
-                                "                        \"          <!--[if mso]>\\n\" +\n" +
-                                "                        \"          <table role=\\\"presentation\\\" align=\\\"center\\\" style=\\\"width:600px;\\\">\\n\" +\n" +
-                                "                        \"          <tr>\\n\" +\n" +
-                                "                        \"          <td>\\n\" +\n" +
-                                "                        \"          <![endif]-->\\n\" +\n" +
-                                "                        \"          <table role=\\\"presentation\\\" style=\\\"width:94%;max-width:600px;border:none;border-spacing:0;text-align:left;font-family:Arial,sans-serif;font-size:16px;line-height:22px;color:#363636;\\\">\\n\" +\n" +
-                                "                        \"            <tr>\\n\" +\n" +
-                                "                        \"              <td style=\\\"padding:40px 30px 30px 30px;text-align:center;font-size:24px;font-weight:bold;\\\">\\n\" +\n" +
-                                "                        \"                <a href=\\\"http://www.example.com/\\\" style=\\\"text-decoration:none;\\\"><img src=\\\"https://assets.codepen.io/210284/logo.png\\\" width=\\\"165\\\" alt=\\\"Logo\\\" style=\\\"width:165px;max-width:80%;height:auto;border:none;text-decoration:none;color:#ffffff;\\\"></a>\\n\" +\n" +
-                                "                        \"              </td>\\n\" +\n" +
-                                "                        \"            </tr>\\n\" +\n" +
-                                "                        \"            <tr>\\n\" +\n" +
-                                "                        \"              <td style=\\\"padding:30px;background-color:#ffffff;\\\">\\n\" +\n" +
-                                "                        \"                <h1 style=\\\"margin-top:0;margin-bottom:16px;font-size:26px;line-height:32px;font-weight:bold;letter-spacing:-0.02em;\\\">Bienvenido a la plataforma de Medical-TEC!</h1>\\n\" +\n" +
-                                "                        \"                <p style=\\\"margin:0;\\\"> TEXTO DE BIENVENIDA <a href=\\\"http://www.example.com/\\\" style=\\\"color:#e50d70;text-decoration:underline;\\\"></a></p>\\n\" +\n" +
-                                "                        \" <p style=\\\"margin:0;\\\"> Su contraseña predeterminada es \" + contrasena + \" </p> \" +\n" +
-                                "                        \"              </td>\\n\" +\n" +
-                                "                        \"            </tr>\\n\" +\n" +
-                                "                        \"            <tr>\\n\" +\n" +
-                                "                        \"              <td style=\\\"padding:0;font-size:24px;line-height:28px;font-weight:bold;\\\">\\n\" +\n" +
-                                "                        \"                <a href=\\\"http://www.example.com/\\\" style=\\\"text-decoration:none;\\\"><img src=\\\"https://assets.codepen.io/210284/1200x800-2.png\\\" width=\\\"600\\\" alt=\\\"\\\" style=\\\"width:100%;height:auto;display:block;border:none;text-decoration:none;color:#363636;\\\"></a>\\n\" +\n" +
-                                "                        \"              </td>\\n\" +\n" +
-                                "                        \"            </tr>\\n\" +\n" +
-                                "                        \"            <tr>\\n\" +\n" +
-                                "                        \"              <td style=\\\"padding:35px 30px 11px 30px;font-size:0;background-color:#ffffff;border-bottom:1px solid #f0f0f5;border-color:rgba(201,201,207,.35);\\\">\\n\" +\n" +
-                                "                        \"                <!--[if mso]>\\n\" +\n" +
-                                "                        \"                <table role=\\\"presentation\\\" width=\\\"100%\\\">\\n\" +\n" +
-                                "                        \"                <tr>\\n\" +\n" +
-                                "                        \"                <td style=\\\"width:145px;\\\" align=\\\"left\\\" valign=\\\"top\\\">\\n\" +\n" +
-                                "                        \"                <![endif]-->\\n\" +\n" +
-                                "                        \"                <div class=\\\"col-sml\\\" style=\\\"display:inline-block;width:100%;max-width:145px;vertical-align:top;text-align:left;font-family:Arial,sans-serif;font-size:14px;color:#363636;\\\">\\n\" +\n" +
-                                "                        \"                  <img src=\\\"https://assets.codepen.io/210284/icon.png\\\" width=\\\"115\\\" alt=\\\"\\\" style=\\\"width:115px;max-width:80%;margin-bottom:20px;\\\">\\n\" +\n" +
-                                "                        \"                </div>\\n\" +\n" +
-                                "                        \"                <!--[if mso]>\\n\" +\n" +
-                                "                        \"                </td>\\n\" +\n" +
-                                "                        \"                <td style=\\\"width:395px;padding-bottom:20px;\\\" valign=\\\"top\\\">\\n\" +\n" +
-                                "                        \"                <![endif]-->\\n\" +\n" +
-                                "                        \"                <div class=\\\"col-lge\\\" style=\\\"display:inline-block;width:100%;max-width:395px;vertical-align:top;padding-bottom:20px;font-family:Arial,sans-serif;font-size:16px;line-height:22px;color:#363636;\\\">\\n\" +\n" +
-                                "                        \"                  <p style=\\\"margin-top:0;margin-bottom:12px;\\\">Nullam mollis sapien vel cursus fermentum. Integer porttitor augue id ligula facilisis pharetra. In eu ex et elit ultricies ornare nec ac ex. Mauris sapien massa, placerat non venenatis et, tincidunt eget leo.</p>\\n\" +\n" +
-                                "                        \"                  <p style=\\\"margin-top:0;margin-bottom:18px;\\\">Nam non ante risus. Vestibulum vitae eleifend nisl, quis vehicula justo. Integer viverra efficitur pharetra. Nullam eget erat nibh.</p>\\n\" +\n" +
-                                "                        \"                  <p style=\\\"margin:0;\\\"><a href=\\\"https://example.com/\\\" style=\\\"background: #ff3884; text-decoration: none; padding: 10px 25px; color: #ffffff; border-radius: 4px; display:inline-block; mso-padding-alt:0;text-underline-color:#ff3884\\\"><!--[if mso]><i style=\\\"letter-spacing: 25px;mso-font-width:-100%;mso-text-raise:20pt\\\">&nbsp;</i><![endif]--><span style=\\\"mso-text-raise:10pt;font-weight:bold;\\\">Claim yours now</span><!--[if mso]><i style=\\\"letter-spacing: 25px;mso-font-width:-100%\\\">&nbsp;</i><![endif]--></a></p>\\n\" +\n" +
-                                "                        \"                </div>\\n\" +\n" +
-                                "                        \"                <!--[if mso]>\\n\" +\n" +
-                                "                        \"                </td>\\n\" +\n" +
-                                "                        \"                </tr>\\n\" +\n" +
-                                "                        \"                </table>\\n\" +\n" +
-                                "                        \"                <![endif]-->\\n\" +\n" +
-                                "                        \"              </td>\\n\" +\n" +
-                                "                        \"            </tr>\\n\" +\n" +
-                                "                        \"            <tr>\\n\" +\n" +
-                                "                        \"              <td style=\\\"padding:30px;font-size:24px;line-height:28px;font-weight:bold;background-color:#ffffff;border-bottom:1px solid #f0f0f5;border-color:rgba(201,201,207,.35);\\\">\\n\" +\n" +
-                                "                        \"                <a href=\\\"http://www.example.com/\\\" style=\\\"text-decoration:none;\\\"><img src=\\\"https://assets.codepen.io/210284/1200x800-1.png\\\" width=\\\"540\\\" alt=\\\"\\\" style=\\\"width:100%;height:auto;border:none;text-decoration:none;color:#363636;\\\"></a>\\n\" +\n" +
-                                "                        \"              </td>\\n\" +\n" +
-                                "                        \"            </tr>\\n\" +\n" +
-                                "                        \"            <tr>\\n\" +\n" +
-                                "                        \"              <td style=\\\"padding:30px;background-color:#ffffff;\\\">\\n\" +\n" +
-                                "                        \"                <p style=\\\"margin:0;\\\">Duis sit amet accumsan nibh, varius tincidunt lectus. Quisque commodo, nulla ac feugiat cursus, arcu orci condimentum tellus, vel placerat libero sapien et libero. Suspendisse auctor vel orci nec finibus.</p>\\n\" +\n" +
-                                "                        \"              </td>\\n\" +\n" +
-                                "                        \"            </tr>\\n\" +\n" +
-                                "                        \"            <tr>\\n\" +\n" +
-                                "                        \"              <td style=\\\"padding:30px;text-align:center;font-size:12px;background-color:#404040;color:#cccccc;\\\">\\n\" +\n" +
-                                "                        \"                <p style=\\\"margin:0 0 8px 0;\\\"><a href=\\\"http://www.facebook.com/\\\" style=\\\"text-decoration:none;\\\"><img src=\\\"https://assets.codepen.io/210284/facebook_1.png\\\" width=\\\"40\\\" height=\\\"40\\\" alt=\\\"f\\\" style=\\\"display:inline-block;color:#cccccc;\\\"></a> <a href=\\\"http://www.twitter.com/\\\" style=\\\"text-decoration:none;\\\"><img src=\\\"https://assets.codepen.io/210284/twitter_1.png\\\" width=\\\"40\\\" height=\\\"40\\\" alt=\\\"t\\\" style=\\\"display:inline-block;color:#cccccc;\\\"></a></p>\\n\" +\n" +
-                                "                        \"                <p style=\\\"margin:0;font-size:14px;line-height:20px;\\\">&reg; Someone, Somewhere 2021<br><a class=\\\"unsub\\\" href=\\\"http://www.example.com/\\\" style=\\\"color:#cccccc;text-decoration:underline;\\\">Unsubscribe instantly</a></p>\\n\" +\n" +
-                                "                        \"              </td>\\n\" +\n" +
-                                "                        \"            </tr>\\n\" +\n" +
-                                "                        \"          </table>\\n\" +\n" +
-                                "                        \"          <!--[if mso]>\\n\" +\n" +
-                                "                        \"          </td>\\n\" +\n" +
-                                "                        \"          </tr>\\n\" +\n" +
-                                "                        \"          </table>\\n\" +\n" +
-                                "                        \"          <![endif]-->\\n\" +\n" +
-                                "                        \"        </td>\\n\" +\n" +
-                                "                        \"      </tr>\\n\" +\n" +
-                                "                        \"    </table>\\n\" +\n" +
-                                "                        \"  </div>\\n\" +\n" +
-                                "                        \"</body>\\n\" +\n" +
-                                "                        \"</html>\";\n";
-                        try {
-                            correoConEstilos.sendEmailEstilos(usu.get().getEmail(),"enlace",contenido2);
-                        } catch (MessagingException e) {
-                            // Manejar la excepción en caso de que ocurra un error al enviar el correo
-                            e.printStackTrace();
-
-                        }
-
                         citaRepository.guardarExamenMedico(idSede,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor,idExamen);
                         rspta.put("msg", "Examen médico agendado de manera exitosa");
                         return ResponseEntity.ok(rspta);
