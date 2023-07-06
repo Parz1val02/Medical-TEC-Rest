@@ -23,8 +23,8 @@ public class ReunionVirtual implements Serializable {
     private Cita cita;
 
 
-    @Column(name = "token",  length = 500)
-    private String token;
+    @Column(name = "enlace",  length = 500)
+    private String enlace;
 
 
     @Column(name = "room",  length = 200)
