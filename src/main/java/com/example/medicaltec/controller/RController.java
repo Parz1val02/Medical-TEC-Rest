@@ -369,7 +369,7 @@ public class RController {
                             throw new RuntimeException(e);
                         }
 
-                        Optional<Usuario> usu = usuarioRepository.findById(dniPaciente);
+                        Optional<Usuario> usu = usuarioRepository.findById(pacienteDni);
                         String contenido1  = "\"<!DOCTYPE html>\\n\" +\n" +
                                 "                        \"<html lang=\\\"en\\\" xmlns=\\\"http://www.w3.org/1999/xhtml\\\" xmlns:o=\\\"urn:schemas-microsoft-com:office:office\\\">\\n\" +\n" +
                                 "                        \"<head>\\n\" +\n" +
