@@ -558,7 +558,7 @@ public class RController {
         Regex regex = new Regex();
         HashMap<String, Object> rspta = new HashMap<>();
         String dniDoctor = null;
-        if(regex.dniValid(dniDoctor)){
+        if(regex.dniValid(dni)){
             dniDoctor = usuarioRepository.validarUsuario(dni);
             if(dniDoctor!=null){
                 TimeListGenerationExample timeListGenerationExample = new TimeListGenerationExample();
