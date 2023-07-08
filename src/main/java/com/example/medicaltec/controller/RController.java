@@ -347,9 +347,6 @@ public class RController {
                         if(modalidad.equals("Virtual")){
                             formapago = "Tarjeta";
                         }
-
-                        citaRepository.guardarConsultaMedica(idSede,idEspecialidad,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor);
-
                         //correo
                         ClasePrueba meet = new ClasePrueba();
                         LocalTime endTime =LocalTime.parse(hora).plusMinutes(30) ; //sumarle 30 min a la hora
