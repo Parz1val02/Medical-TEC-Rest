@@ -1,6 +1,8 @@
 package com.example.medicaltec.function;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -18,13 +20,15 @@ public class ClasePrueba {
         //System.out.println("Jitsi Meet URL: " + jitsiMeetURL);
     }
 
-    public String generateJitsiMeetURL(String baseURL, String meetingName, LocalTime startTime, int durationMinutes) throws UnsupportedEncodingException {
+    public String generateJitsiMeetURL(String baseURL, String meetingName, LocalTime startTime, int durationMinutes, LocalDate fecha) throws UnsupportedEncodingException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss");
-        String encodedMeetingName = URLEncoder.encode(meetingName, "UTF-8");
-        String encodedStartTime = URLEncoder.encode(startTime.format(formatter), "UTF-8");
+        String encodedMeetingName = URLEncoder.encode(meetingName, StandardCharsets.UTF_8);
+        LocalDateTime dateTime = fecha.atTime(startTime);
+        String encodedStartTime = URLEncoder.encode(dateTime.format(formatter), StandardCharsets.UTF_8);
 
         LocalTime endTime = startTime.plusMinutes(durationMinutes);
-        String encodedEndTime = URLEncoder.encode(endTime.format(formatter), "UTF-8");
+        LocalDateTime dateTimeEnd = fecha.atTime(endTime);
+        String encodedEndTime = URLEncoder.encode(dateTimeEnd.format(formatter), StandardCharsets.UTF_8);
 
         String jitsiMeetURL = baseURL + "/" + encodedMeetingName + "?config.startWithVideoMuted=true&config.startTime=" + encodedStartTime + "&config.endTime=" + encodedEndTime;
 

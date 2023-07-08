@@ -363,7 +363,7 @@ public class RController {
 
                         String enlace1;
                         try {
-                            enlace1= meet.generateJitsiMeetURL(domain,"sala personal",LocalTime.parse(hora), 30);
+                            enlace1= meet.generateJitsiMeetURL(domain,"sala personal",LocalTime.parse(hora), 30, parsedDate);
                             System.out.println(enlace1);
                         } catch (UnsupportedEncodingException e) {
                             throw new RuntimeException(e);
