@@ -5,7 +5,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalTime;
 
 public interface Citadto {
-    String getID();
+    String getCitaid();
     String getSede();
     String getTipoCita();
     String getFormaPago();
@@ -15,4 +15,8 @@ public interface Citadto {
     LocalTime getHora();
     String getDoctor();
     String getTitle();
+    String getExtra();
+    String getPagada();
+    String getPrecio();
+    String getDireccion();
 }

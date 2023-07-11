@@ -56,8 +56,10 @@ public class RController {
 
     @GetMapping(value = "/citas")
     public List<Citadto> returnCitas(@RequestParam("dni")String dni){
-        List<Citadto> consultas = citaRepository.historialCitasAgendadas(dni);
+        List<Citadto> consultasVirtuales = citaRepository.historialCitasAgendadasVirtual(dni);
+        List<Citadto> consultasPresenciales = citaRepository.historialCitasAgendadasPresencial(dni);
         List<Citadto> examenes = citaRepository.historialExamenesAgendados(dni);
+        List<Citadto> consultas = Stream.concat(consultasPresenciales.stream(), consultasVirtuales.stream()).toList();
         return Stream.concat(consultas.stream(), examenes.stream()).toList();
     }
     @GetMapping(value = "/citasDoctor")
