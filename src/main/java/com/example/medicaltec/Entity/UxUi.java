@@ -7,8 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "ux/ui")
-public class uxUi {
+@Table(name = "ux_ui")
+public class UxUi {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -25,9 +25,9 @@ public class uxUi {
     @Column(name = "zonahoraria")
     private String zonaHoraria;
 
-    @Column(name = "colorsidebar")
-    private String colorSidebar;
+    @Column(name = "colorbar")
+    private String colorBar;
 
-    @Column(name = "colortopbar")
-    private String coorTopbar;
+    @Column(name = "colorback")
+    private String colorBack;
 }
