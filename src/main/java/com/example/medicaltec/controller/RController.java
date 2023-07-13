@@ -345,13 +345,11 @@ public class RController {
                         String formapago = null;
                         if(modalidad.equals("Presencial")){
                            formapago = "En caja";
+                            citaRepository.guardarConsultaMedicaPresencial(idSede,idEspecialidad,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor);
+                            rspta.put("msg", "Consulta médica agendada de manera exitosa");
                         }
-                        if(modalidad.equals("Virtual")){
-                            formapago = "Tarjeta";
-                        }
-                        citaRepository.guardarConsultaMedica(idSede,idEspecialidad,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor);
-                        rspta.put("msg", "Consulta médica agendada de manera exitosa");
                         if (modalidad.equalsIgnoreCase("Virtual") ){
+                            formapago = "Tarjeta";
                             //correo
                             ClasePrueba meet = new ClasePrueba();
                             LocalTime endTime =LocalTime.parse(hora).plusMinutes(30) ; //sumarle 30 min a la hora
@@ -503,13 +501,15 @@ public class RController {
                                     "</body>\n" +
                                     "</html>";
                             //correoConEstilos.sendEmailEstilos(usu.get().getEmail(),"enlace",contenido);
+                            reunionVirtualRepository.guardarReunion(enlace1);
+                            citaRepository.guardarConsultaMedicaVirtual(idSede,idEspecialidad,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor,reunionVirtualRepository.ultimaReunion().getId());
+                            rspta.put("msg", "Consulta médica agendada de manera exitosa");
                             try {
                                 correoConEstilos.sendEmailEstilos(usu.get().getEmail(),"enlace",contenido1);
                             } catch (MessagingException e) {
                                 // Manejar la excepción en caso de que ocurra un error al enviar el correo
                                 e.printStackTrace();
                             }
-                            reunionVirtualRepository.guardarReunion(enlace1,  citaRepository.ultimaCita().getId());
                         }
                         //reunionVirtualRepository.guardarReunion(enlace1,  citaRepository.ultimaCita().getId());
                         return ResponseEntity.ok(rspta);

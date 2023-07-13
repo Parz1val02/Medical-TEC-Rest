@@ -16,9 +16,12 @@ public interface ReunionVirtualRepository extends JpaRepository<ReunionVirtual, 
 
     @Modifying
     @Transactional
-    @Query(nativeQuery = true, value = "INSERT INTO reunion_virtual (enlace, room, cita_idcita)\n" +
-            "values(?1,null,?2)")
-    void guardarReunion(String token, Integer idcita);
+    @Query(nativeQuery = true, value = "INSERT INTO reunion_virtual (enlace)\n" +
+            "values(?1)")
+    void guardarReunion(String token);
+    //obtener ultimo id de a cita creada al agendar
+    @Query(nativeQuery = true, value = "select * from reunion_virtual order by idreunion_virtual desc limit 1")
+    ReunionVirtual ultimaReunion();
 
 
 }
