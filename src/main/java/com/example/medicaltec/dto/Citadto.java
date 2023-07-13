@@ -19,4 +19,5 @@ public interface Citadto {
     String getPagada();
     String getPrecio();
     String getDireccion();
+    String getEstado();
 }
