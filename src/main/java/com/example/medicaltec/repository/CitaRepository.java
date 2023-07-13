@@ -20,7 +20,7 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "inner join especialidades E on C.especialidades_id_especialidad=E.id_especialidad\n" +
            "inner join tipocita T on C.tipocita_idtipocita=T.idtipocita\n" +
            "inner join usuario D on C.doctor_dni1=D.dni\n" +
-           "inner join reunion_virtual R on C.idcita=R.cita_idcita\n" +
+           "inner join reunion_virtual R on C.id_reunion=R.idreunion_virtual\n" +
            "inner join usuario P on C.paciente_dni=P.dni\n" +
            "inner join seguros Z on P.seguros_id_seguro=Z.id_seguro\n" +
            "inner join estadoscita W on C.estadoscita_idestados=W.idestados\n" +
