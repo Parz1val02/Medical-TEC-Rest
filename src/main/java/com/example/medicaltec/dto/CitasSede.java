@@ -15,4 +15,5 @@ public interface CitasSede {
     String getPaciente();
     String getDoctor();
     String getEspecialidad();
+    String getEstado();
 }

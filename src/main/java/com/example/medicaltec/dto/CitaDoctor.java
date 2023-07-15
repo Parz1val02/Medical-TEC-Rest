@@ -15,4 +15,6 @@ public interface CitaDoctor {
     LocalTime getHora();
     String getPaciente();
     String getEspecialidad();
+    String getPago();
+    String getEstado();
 }
