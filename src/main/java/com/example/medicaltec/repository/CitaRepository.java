@@ -27,28 +27,28 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "inner join estadoscita W on C.estadoscita_idestados=W.idestados\n" +
            "where str_to_date(fecha, '%d-%m-%Y')>= current_date() and citacancelada=0 and estadoscita_idestados in (1,2,4,5) and paciente_dni=?1 and modalidad=\"Virtual\"")
    List<Citadto> historialCitasAgendadasVirtual(String dniPaciente);
-   @Query(nativeQuery = true, value = "SELECT C.idcita as `Citaid`, S.nombre as `Sede`, E.nombre_especialidad as `Title`, formapago as `FormaPago`, modalidad as `Modalidad`, T.tipo_cita as `TipoCita`,fecha as `Start`, hora as `Hora`, concat(D.nombre,\" \",D.apellido) as `Doctor`, G.idconsultorio as `Extra`, C.pagada as `Pagada`,(Z.porc_seguro*T.precio)/100 as `Precio`, S.direccion as `Direccion`, W.tipo as `Estado`\n" +
+   @Query(nativeQuery = true, value = "SELECT C.idcita as `Citaid`, S.nombre as `Sede`, E.nombre_especialidad as `Title`, formapago as `FormaPago`, modalidad as `Modalidad`, T.tipo_cita as `TipoCita`,fecha as `Start`, hora as `Hora`, concat(D.nombre,\" \",D.apellido) as `Doctor`, G.nombreconsultorio as `Extra`, C.pagada as `Pagada`,(Z.porc_seguro*T.precio)/100 as `Precio`, S.direccion as `Direccion`, W.tipo as `Estado`\n" +
            "FROM cita C\n" +
            "inner join sedes S on C.sedes_idsedes=S.idsedes\n" +
            "inner join especialidades E on C.especialidades_id_especialidad=E.id_especialidad\n" +
            "inner join tipocita T on C.tipocita_idtipocita=T.idtipocita\n" +
            "inner join usuario D on C.doctor_dni1=D.dni\n" +
            "inner join horasdoctor H on C.doctor_dni1=H.doctor_dni\n" +
-           "inner join consultorio G on H.idhorasdoctor=G.horasdoctor_idhorasdoctor\n" +
+           "inner join consultorio G on G.dni=D.dni\n" +
            "inner join usuario P on C.paciente_dni=P.dni\n" +
            "inner join seguros Z on P.seguros_id_seguro=Z.id_seguro\n" +
            "inner join estadoscita W on C.estadoscita_idestados=W.idestados\n" +
-           "where str_to_date(fecha, '%d-%m-%Y')>= current_date() and citacancelada=0 and estadoscita_idestados in (1,2,4,5) and paciente_dni=?1 and modalidad=\"Presencial\"")
+           "where str_to_date(fecha, '%d-%m-%Y')>= current_date() and citacancelada=0 and estadoscita_idestados in (1,2,4,5) and paciente_dni=?1 and modalidad=\"Presencial\";")
    List<Citadto> historialCitasAgendadasPresencial(String dniPaciente);
 
-   @Query(nativeQuery = true, value = "SELECT C.idcita as `Citaid`, S.nombre as `Sede`, E.nombre as `Title`, formapago as `FormaPago`, modalidad as `Modalidad`, T.tipo_cita as `TipoCita`,fecha as `Start`, hora as `Hora`, concat(D.nombre,\" \",D.apellido) as `Doctor`, G.idconsultorio as `Extra`, C.pagada as `Pagada`, (Z.porc_seguro*E.precio)/100 as `Precio`, S.direccion as `Direccion`, W.tipo as `Estado`\n" +
+   @Query(nativeQuery = true, value = "SELECT C.idcita as `Citaid`, S.nombre as `Sede`, E.nombre as `Title`, formapago as `FormaPago`, modalidad as `Modalidad`, T.tipo_cita as `TipoCita`,fecha as `Start`, hora as `Hora`, concat(D.nombre,\" \",D.apellido) as `Doctor`, G.nombreconsultorio as `Extra`, C.pagada as `Pagada`, (Z.porc_seguro*E.precio)/100 as `Precio`, S.direccion as `Direccion`, W.tipo as `Estado`\n" +
            "FROM cita C\n" +
            "inner join sedes S on C.sedes_idsedes=S.idsedes\n" +
            "inner join examen_medico E on C.examen_medico_idexamen=E.idexamen\n" +
            "inner join tipocita T on C.tipocita_idtipocita=T.idtipocita\n" +
            "inner join usuario D on C.doctor_dni1=D.dni\n" +
            "inner join horasdoctor H on C.doctor_dni1=H.doctor_dni\n" +
-           "inner join consultorio G on H.idhorasdoctor=G.horasdoctor_idhorasdoctor\n" +
+           "inner join consultorio G on D.dni=G.dni\n" +
            "inner join usuario P on C.paciente_dni=P.dni\n" +
            "inner join seguros Z on P.seguros_id_seguro=Z.id_seguro\n" +
            "inner join estadoscita W on C.estadoscita_idestados=W.idestados\n" +
