@@ -366,6 +366,8 @@ public class RController {
                             correoConEstilos.sendEmailEstilos(usuarioRepository.findById(dniPaciente).get().getEmail(), "Notificacion de cita presencial","Usted agendó una cita presencial con el " + usuarioRepository.findById(dniDoctor).get().getNombre() + " "
                                     + usuarioRepository.findById(dniDoctor).get().getApellido() +  "de la especialidad de " +
                                     usuarioRepository.findById(dniDoctor).get().getEspecialidadesIdEspecialidad().getNombreEspecialidad());
+
+                            //correoConEstilos.sendEmailEstilos(usuarioRepository.findById(dniPaciente).get().getEmail(), "Notificacion de cita presencial", "");
                             rspta.put("msg", "Consulta médica agendada de manera exitosa");
                         }
                         if (modalidad.equalsIgnoreCase("Virtual") ){
@@ -524,7 +526,7 @@ public class RController {
                             citaRepository.guardarConsultaMedicaVirtual(idSede,idEspecialidad,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor,reunionVirtualRepository.ultimaReunion().getId());
                             rspta.put("msg", "Consulta médica agendada de manera exitosa");
                             try {
-                                correoConEstilos.sendEmailEstilos(usu.get().getEmail(),"enlace",contenido1);
+                                correoConEstilos.sendEmailEstilos(usu.get().getEmail(),"enlace",enlace1);
                                 correoConEstilos.sendEmailEstilos(usu.get().getEmail() , "Notificacion de cita virtual", "usted ha reservado una cita virtual");
                             } catch (MessagingException e) {
                                 // Manejar la excepción en caso de que ocurra un error al enviar el correo
