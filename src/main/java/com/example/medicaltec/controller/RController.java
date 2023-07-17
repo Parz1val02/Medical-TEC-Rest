@@ -123,14 +123,11 @@ public class RController {
             idTipoCita = tipoCitaRepository.verificarTipoCita(tipoCitaId);
         }
         if(idSede!=null && idTipoCita!=null && regex.fechaValid(fecha)){
-            // Specify the time zone ID for Lima, Peru
-            String timeZoneId = "America/Lima";
-
-            // Get the current date and time in Lima, Peru
-            LocalDateTime currentDateTime = LocalDateTime.now();
-            ZonedDateTime zonedDateTime = currentDateTime.atZone(ZoneId.of(timeZoneId));
-            LocalDate currentDate = zonedDateTime.toLocalDate();
-            LocalTime currentTime = zonedDateTime.toLocalTime();
+            // Get the current date and time in America/Lima timezone
+            ZoneId limaZone = ZoneId.of("America/Lima");
+            LocalDate currentDate = LocalDate.now(limaZone);
+            LocalTime currentTime = LocalTime.now(limaZone);
+            currentTime = currentTime.plusMinutes(14);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
             DateTimeFormatter formatter3 = DateTimeFormatter.ofPattern("HH:mm");
@@ -158,10 +155,10 @@ public class RController {
                                 for (String value : values) {
                                     if(value.equalsIgnoreCase(diaSemana)){
                                         doctoresAtienden.add(doctores.get(i));
+                                        horasdoctorsAtienden.add(horasdoctors);
                                         break;
                                     }
                                 }
-                                horasdoctorsAtienden.add(horasdoctors);
                             }
                         }
                         ArrayList<SuperDoctor> superDoctors = new ArrayList<>();
@@ -175,9 +172,16 @@ public class RController {
                             if(parsedDate.isEqual(currentDate)){
                                 System.out.println(parsedTime + " aaa");
                                 horasOcupadas = citaRepository.horasCitasProgramdasHoy(fecha, doctoresAtienden.get(i).getDni(), parsedTime);
-                                LocalTime closestTime = currentTime.withMinute((currentTime.getMinute() + 15) / 30 * 30)
-                                        .withSecond(0)
-                                        .withNano(0);
+                                LocalTime closestTime = null;
+                                if(currentTime.getMinute()>30){
+                                    closestTime= currentTime.plusMinutes(60-(currentTime.getMinute()))
+                                            .withSecond(0)
+                                            .withNano(0);
+                                }else{
+                                    closestTime= currentTime.plusMinutes(30-(currentTime.getMinute()))
+                                            .withSecond(0)
+                                            .withNano(0);
+                                }
                                 horasTrabajo = timeListGenerationExample.generateTimeList(closestTime, end, skip);
                             }else{
                                 horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni());
@@ -197,10 +201,12 @@ public class RController {
                                     }
                                 }
                             }
-                            SuperDoctor superDoctor = new SuperDoctor();
-                            superDoctor.setDoctorDto(doctoresAtienden.get(i));
-                            superDoctor.setHoras(horasTrabajo);
-                            superDoctors.add(superDoctor);
+                            if(horasTrabajo.size()>0){
+                                SuperDoctor superDoctor = new SuperDoctor();
+                                superDoctor.setDoctorDto(doctoresAtienden.get(i));
+                                superDoctor.setHoras(horasTrabajo);
+                                superDoctors.add(superDoctor);
+                            }
                         }
                         ArrayList<String> modalidad = new ArrayList<>();
                         modalidad.add("Presencial");
@@ -229,10 +235,10 @@ public class RController {
                                 for (String value : values) {
                                     if(value.equalsIgnoreCase(diaSemana)){
                                         doctoresAtienden.add(doctores.get(i));
+                                        horasdoctorsAtienden.add(horasdoctors);
                                         break;
                                     }
                                 }
-                                horasdoctorsAtienden.add(horasdoctors);
                             }
                         }
                         ArrayList<SuperDoctor> superDoctors = new ArrayList<>();
@@ -246,9 +252,16 @@ public class RController {
                             if(parsedDate.isEqual(currentDate)){
                                 System.out.println(parsedTime + " aaa");
                                 horasOcupadas = citaRepository.horasCitasProgramdasHoy(fecha, doctoresAtienden.get(i).getDni(), parsedTime);
-                                LocalTime closestTime = currentTime.withMinute((currentTime.getMinute() + 15) / 30 * 30)
-                                        .withSecond(0)
-                                        .withNano(0);
+                                LocalTime closestTime = null;
+                                if(currentTime.getMinute()>30){
+                                    closestTime= currentTime.plusMinutes(60-(currentTime.getMinute()))
+                                            .withSecond(0)
+                                            .withNano(0);
+                                }else{
+                                    closestTime= currentTime.plusMinutes(30-(currentTime.getMinute()))
+                                            .withSecond(0)
+                                            .withNano(0);
+                                }
                                 horasTrabajo = timeListGenerationExample.generateTimeList(closestTime, end, skip);
                             }else{
                                 horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni());
@@ -268,10 +281,12 @@ public class RController {
                                     }
                                 }
                             }
-                            SuperDoctor superDoctor = new SuperDoctor();
-                            superDoctor.setDoctorDto(doctoresAtienden.get(i));
-                            superDoctor.setHoras(horasTrabajo);
-                            superDoctors.add(superDoctor);
+                            if(horasTrabajo.size()>0){
+                                SuperDoctor superDoctor = new SuperDoctor();
+                                superDoctor.setDoctorDto(doctoresAtienden.get(i));
+                                superDoctor.setHoras(horasTrabajo);
+                                superDoctors.add(superDoctor);
+                            }
                         }
                         ArrayList<String> modalidad = new ArrayList<>();
                         modalidad.add("Presencial");
@@ -362,14 +377,14 @@ public class RController {
             dniPaciente = usuarioRepository.validarUsuario(pacienteDni);
         }
         if(idSede!=null && idTipoCita!=null  && dniDoctor!=null && dniPaciente!=null && regex.fechaValid(fecha) && regex.horaValid(hora) && (modalidad.equals("Presencial") || modalidad.equals("Virtual"))){
-            // Specify the time zone ID for Lima, Peru
-            String timeZoneId = "America/Lima";
+            // Get the current date and time in America/Lima timezone
+            ZoneId limaZone = ZoneId.of("America/Lima");
+            ZonedDateTime limaDateTime = ZonedDateTime.now(limaZone);
 
-            // Get the current date and time in Lima, Peru
-            LocalDateTime currentDateTime = LocalDateTime.now();
-            ZonedDateTime zonedDateTime = currentDateTime.atZone(ZoneId.of(timeZoneId));
-            LocalDate currentDate = zonedDateTime.toLocalDate();
-            LocalTime currentTime = zonedDateTime.toLocalTime();
+            // Extract local date and time components
+            LocalDate currentDate = limaDateTime.toLocalDate();
+            LocalTime currentTime = limaDateTime.toLocalTime();
+            currentTime = currentTime.plusMinutes(14);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -382,7 +397,7 @@ public class RController {
                     String idEspecialidad = especialidadRepository.verificarEspecialidad(especialidadId);
                     if(idEspecialidad!=null){
                         String formapago = null;
-                        if(modalidad.equals("Presencial")){
+                        if(modalidad.equalsIgnoreCase("Presencial")){
                            formapago = "En caja";
                             citaRepository.guardarConsultaMedicaPresencial(idSede,idEspecialidad,formapago,modalidad,idTipoCita,fecha,hora,dniPaciente,dniDoctor);
                             /*correoConEstilos.sendEmailEstilos(usuarioRepository.findById(dniPaciente).get().getEmail(), "Notificacion de cita presencial","Usted agendó una cita presencial con el " + usuarioRepository.findById(dniDoctor).get().getNombre() + " "
@@ -479,14 +494,14 @@ public class RController {
         if(regex.dniValid(dni)){
             dniDoctor = usuarioRepository.validarUsuario(dni);
             if(dniDoctor!=null){
-                // Specify the time zone ID for Lima, Peru
-                String timeZoneId = "America/Lima";
+                // Get the current date and time in America/Lima timezone
+                ZoneId limaZone = ZoneId.of("America/Lima");
+                ZonedDateTime limaDateTime = ZonedDateTime.now(limaZone);
 
-                // Get the current date and time in Lima, Peru
-                LocalDateTime currentDateTime = LocalDateTime.now();
-                ZonedDateTime zonedDateTime = currentDateTime.atZone(ZoneId.of(timeZoneId));
-                LocalDate currentDate = zonedDateTime.toLocalDate();
-                LocalTime currentTime = zonedDateTime.toLocalTime();
+                // Extract local date and time components
+                LocalDate currentDate = limaDateTime.toLocalDate();
+                LocalTime currentTime = limaDateTime.toLocalTime();
+                currentTime = currentTime.plusMinutes(14);
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
                 DateTimeFormatter formatter3 = DateTimeFormatter.ofPattern("HH:mm");
@@ -533,9 +548,16 @@ public class RController {
                         if(fechasAtienden.get(x).isEqual(currentDate)){
                             System.out.println(parsedTime + " aaa");
                             horasOcupadas = citaRepository.horasCitasProgramdasHoy(dateString, dni, parsedTime);
-                            LocalTime closestTime = currentTime.withMinute((currentTime.getMinute() + 15) / 30 * 30)
-                                    .withSecond(0)
-                                    .withNano(0);
+                            LocalTime closestTime = null;
+                            if(currentTime.getMinute()>30){
+                             closestTime= currentTime.plusMinutes(60-(currentTime.getMinute()))
+                                        .withSecond(0)
+                                        .withNano(0);
+                            }else{
+                                closestTime= currentTime.plusMinutes(30-(currentTime.getMinute()))
+                                        .withSecond(0)
+                                        .withNano(0);
+                            }
                             horasTrabajo = timeListGenerationExample.generateTimeList(closestTime, end, skip);
                         }else{
                             horasOcupadas = citaRepository.horasCitasProgramdas(dateString, dni);
@@ -556,10 +578,12 @@ public class RController {
                             }
                         }
                         //Continuar
-                        HorariosDia horariosDia = new HorariosDia();
-                        horariosDia.setDia(fechasAtienden.get(x));
-                        horariosDia.setHoras(horasTrabajo);
-                        listaHorariosDia.add(horariosDia);
+                        if(horasTrabajo.size()>0){
+                            HorariosDia horariosDia = new HorariosDia();
+                            horariosDia.setDia(fechasAtienden.get(x));
+                            horariosDia.setHoras(horasTrabajo);
+                            listaHorariosDia.add(horariosDia);
+                        }
                     }
                     //Continuar
                     horariosMes.setDiasDelMes(listaHorariosDia);
