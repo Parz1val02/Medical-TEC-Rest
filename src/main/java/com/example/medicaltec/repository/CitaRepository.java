@@ -115,5 +115,6 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "values(0,?1,null,1,null,?2,?3,?4,?5,?6,?7,?8,0,?9)")
    void guardarExamenMedico(String idSede, String formapago, String modalidad, String idTipoCita, String fecha, String hora, String dniPaciente, String dniDoctor, String idExamenMedico);
 
-
+   @Query(nativeQuery = true, value = "select * from cita order by idcita desc limit 1")
+   Cita ultimaCita();
 }

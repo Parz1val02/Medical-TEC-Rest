@@ -9,9 +9,9 @@ public interface ConsultorioxDoctorDto {
 
     String getNombreSede();
 
-    Integer getTorre();
+    Integer getTorres();
 
-    Integer getPiso();
+    Integer getPisos();
 
     String getPacientedni();
 
