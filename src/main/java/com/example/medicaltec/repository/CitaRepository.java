@@ -96,8 +96,10 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
    List<CitasSede> historialExamenesSede(String idSede);
 
    @Query(nativeQuery = true, value = "SELECT DATE_FORMAT(hora, '%H:%i') FROM cita  where fecha=?1 and doctor_dni1=?2 and citacancelada=0 and DATE_FORMAT(hora, '%H:%i')>?3")
-   List<String> horasCitasProgramdas(String fecha, String doctorDni, String hora);
+   List<String> horasCitasProgramdasHoy(String fecha, String doctorDni, String hora);
 
+   @Query(nativeQuery = true, value = "SELECT DATE_FORMAT(hora, '%H:%i') FROM cita  where fecha=?1 and doctor_dni1=?2 and citacancelada=0")
+   List<String> horasCitasProgramdas(String fecha, String doctorDni);
    @Modifying
    @Transactional
    @Query(nativeQuery = true, value = "INSERT INTO cita (citacancelada, sedes_idsedes, especialidades_id_especialidad, estadoscita_idestados, receta_idreceta, formapago, modalidad, tipocita_idtipocita, fecha, hora, paciente_dni, doctor_dni1, pagada, examen_medico_idexamen)\n" +

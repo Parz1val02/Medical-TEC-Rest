@@ -166,12 +166,23 @@ public class RController {
                         }
                         ArrayList<SuperDoctor> superDoctors = new ArrayList<>();
                         for(int i=0;i<doctoresAtienden.size();i++){
-                            List<String> horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni(), parsedTime);
+                            List<String> horasOcupadas = new ArrayList<>();
                             Horasdoctor horasDoctor = horasdoctorsAtienden.get(i);
                             LocalTime start = horasDoctor.getHorainicio();
                             LocalTime end = horasDoctor.getHorafin();
                             LocalTime skip = horasDoctor.getHoralibre();
-                            List<LocalTime> horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
+                            List<LocalTime> horasTrabajo = new ArrayList<>();
+                            if(parsedDate.isEqual(currentDate)){
+                                System.out.println(parsedTime + " aaa");
+                                horasOcupadas = citaRepository.horasCitasProgramdasHoy(fecha, doctoresAtienden.get(i).getDni(), parsedTime);
+                                LocalTime closestTime = currentTime.withMinute((currentTime.getMinute() + 15) / 30 * 30)
+                                        .withSecond(0)
+                                        .withNano(0);
+                                horasTrabajo = timeListGenerationExample.generateTimeList(closestTime, end, skip);
+                            }else{
+                                horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni());
+                                horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
+                            }
                             for(int j=0;j<horasOcupadas.size();j++){
                                 String timeString = horasOcupadas.get(j);
                                 String formatPattern = "HH:mm";
@@ -226,12 +237,23 @@ public class RController {
                         }
                         ArrayList<SuperDoctor> superDoctors = new ArrayList<>();
                         for(int i=0;i<doctoresAtienden.size();i++){
-                            List<String> horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni(), parsedTime);
+                            List<String> horasOcupadas = new ArrayList<>();
                             Horasdoctor horasDoctor = horasdoctorsAtienden.get(i);
                             LocalTime start = horasDoctor.getHorainicio();
                             LocalTime end = horasDoctor.getHorafin();
                             LocalTime skip = horasDoctor.getHoralibre();
-                            List<LocalTime> horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
+                            List<LocalTime> horasTrabajo = new ArrayList<>();
+                            if(parsedDate.isEqual(currentDate)){
+                                System.out.println(parsedTime + " aaa");
+                                horasOcupadas = citaRepository.horasCitasProgramdasHoy(fecha, doctoresAtienden.get(i).getDni(), parsedTime);
+                                LocalTime closestTime = currentTime.withMinute((currentTime.getMinute() + 15) / 30 * 30)
+                                        .withSecond(0)
+                                        .withNano(0);
+                                horasTrabajo = timeListGenerationExample.generateTimeList(closestTime, end, skip);
+                            }else{
+                                horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni());
+                                horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
+                            }
                             for(int j=0;j<horasOcupadas.size();j++){
                                 String timeString = horasOcupadas.get(j);
                                 String formatPattern = "HH:mm";
@@ -506,8 +528,19 @@ public class RController {
                         // Create a formatter with the desired date pattern
                         String parsedTime = currentTime.format(formatter3);
                         String dateString = fechasAtienden.get(x).format(formatter);
-                        List<String> horasOcupadas = citaRepository.horasCitasProgramdas(dateString, dni,parsedTime);
-                        List<LocalTime> horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
+                        List<String> horasOcupadas = new ArrayList<>();
+                        List<LocalTime> horasTrabajo = new ArrayList<>();
+                        if(fechasAtienden.get(x).isEqual(currentDate)){
+                            System.out.println(parsedTime + " aaa");
+                            horasOcupadas = citaRepository.horasCitasProgramdasHoy(dateString, dni, parsedTime);
+                            LocalTime closestTime = currentTime.withMinute((currentTime.getMinute() + 15) / 30 * 30)
+                                    .withSecond(0)
+                                    .withNano(0);
+                            horasTrabajo = timeListGenerationExample.generateTimeList(closestTime, end, skip);
+                        }else{
+                            horasOcupadas = citaRepository.horasCitasProgramdas(dateString, dni);
+                            horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
+                        }
                         for(int j=0;j<horasOcupadas.size();j++){
                             String timeString = horasOcupadas.get(j);
                             String formatPattern = "HH:mm";
