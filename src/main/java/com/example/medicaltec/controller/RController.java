@@ -13,9 +13,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.YearMonth;
+import java.time.*;
 import java.util.Base64;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -125,9 +123,20 @@ public class RController {
             idTipoCita = tipoCitaRepository.verificarTipoCita(tipoCitaId);
         }
         if(idSede!=null && idTipoCita!=null && regex.fechaValid(fecha)){
+            // Specify the time zone ID for Lima, Peru
+            String timeZoneId = "America/Lima";
+
+            // Get the current date and time in Lima, Peru
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            ZonedDateTime zonedDateTime = currentDateTime.atZone(ZoneId.of(timeZoneId));
+            LocalDate currentDate = zonedDateTime.toLocalDate();
+            LocalTime currentTime = zonedDateTime.toLocalTime();
+
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+            DateTimeFormatter formatter3 = DateTimeFormatter.ofPattern("HH:mm");
+
+            String parsedTime = currentTime.format(formatter3);
             LocalDate parsedDate = LocalDate.parse(fecha, formatter);
-            LocalDate currentDate = LocalDate.now();
             if(parsedDate.isBefore(currentDate)) {
                 rspta.put("msg", "Ingresar una fecha a partir de hoy");
                 return ResponseEntity.badRequest().body(rspta);
@@ -157,7 +166,7 @@ public class RController {
                         }
                         ArrayList<SuperDoctor> superDoctors = new ArrayList<>();
                         for(int i=0;i<doctoresAtienden.size();i++){
-                            List<String> horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni());
+                            List<String> horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni(), parsedTime);
                             Horasdoctor horasDoctor = horasdoctorsAtienden.get(i);
                             LocalTime start = horasDoctor.getHorainicio();
                             LocalTime end = horasDoctor.getHorafin();
@@ -217,7 +226,7 @@ public class RController {
                         }
                         ArrayList<SuperDoctor> superDoctors = new ArrayList<>();
                         for(int i=0;i<doctoresAtienden.size();i++){
-                            List<String> horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni());
+                            List<String> horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni(), parsedTime);
                             Horasdoctor horasDoctor = horasdoctorsAtienden.get(i);
                             LocalTime start = horasDoctor.getHorainicio();
                             LocalTime end = horasDoctor.getHorafin();
@@ -331,12 +340,20 @@ public class RController {
             dniPaciente = usuarioRepository.validarUsuario(pacienteDni);
         }
         if(idSede!=null && idTipoCita!=null  && dniDoctor!=null && dniPaciente!=null && regex.fechaValid(fecha) && regex.horaValid(hora) && (modalidad.equals("Presencial") || modalidad.equals("Virtual"))){
+            // Specify the time zone ID for Lima, Peru
+            String timeZoneId = "America/Lima";
+
+            // Get the current date and time in Lima, Peru
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            ZonedDateTime zonedDateTime = currentDateTime.atZone(ZoneId.of(timeZoneId));
+            LocalDate currentDate = zonedDateTime.toLocalDate();
+            LocalTime currentTime = zonedDateTime.toLocalTime();
+
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
             LocalDate parsedDate = LocalDate.parse(fecha, formatter);
-            LocalDate currentDate = LocalDate.now();
-            LocalDate tomorrow = currentDate.plusDays(1);
-            if(parsedDate.isBefore(tomorrow)) {
-                rspta.put("msg", "Ingresar una fecha futura");
+            if(parsedDate.isBefore(currentDate)) {
+                rspta.put("msg", "Ingresar una fecha a partir de hoy");
                 return ResponseEntity.badRequest().body(rspta);
             }else{
                 if(especialidadId!=null){
@@ -367,7 +384,6 @@ public class RController {
                             String enlace1;
                             try {
                                 enlace1= meet.generateJitsiMeetURL(domain,"ReunionesMedicalTec",LocalTime.parse(hora), 30, parsedDate);
-                                System.out.println(enlace1);
                             } catch (UnsupportedEncodingException e) {
                                 throw new RuntimeException(e);
                             }
@@ -567,10 +583,22 @@ public class RController {
         if(regex.dniValid(dni)){
             dniDoctor = usuarioRepository.validarUsuario(dni);
             if(dniDoctor!=null){
+                // Specify the time zone ID for Lima, Peru
+                String timeZoneId = "America/Lima";
+
+                // Get the current date and time in Lima, Peru
+                LocalDateTime currentDateTime = LocalDateTime.now();
+                ZonedDateTime zonedDateTime = currentDateTime.atZone(ZoneId.of(timeZoneId));
+                LocalDate currentDate = zonedDateTime.toLocalDate();
+                LocalTime currentTime = zonedDateTime.toLocalTime();
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                DateTimeFormatter formatter3 = DateTimeFormatter.ofPattern("HH:mm");
+
+
                 TimeListGenerationExample timeListGenerationExample = new TimeListGenerationExample();
                 Fechas fechasFunciones = new Fechas();
                 ArrayList<LocalDate> fechasAtienden = new ArrayList<>();
-                LocalDate currentDate = LocalDate.now();
                 int year = currentDate.getYear();
                 String month = currentDate.getMonth().name();
                 int numMonth = fechasFunciones.traducirMesNumero(month);
@@ -583,14 +611,13 @@ public class RController {
                     LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
                     String[] values = horasDoctor.getDias().split(",");
                     // Iterate through the dates
-                    LocalDate currentDateGa = currentDate.plusDays(1);
+                    LocalDate currentDateGa = currentDate;
                     while (!currentDateGa.isAfter(endDate)) {
                         String dayWeekGa = currentDateGa.getDayOfWeek().name();
                         String diaSemanaGa = fechasFunciones.traducirDia(dayWeekGa);
                         for (String value : values) {
                             if(value.equalsIgnoreCase(diaSemanaGa)){
                                 fechasAtienden.add(currentDateGa);
-                                System.out.println(dni + ": " + currentDateGa);
                                 break;
                             }
                         }
@@ -603,9 +630,9 @@ public class RController {
                     LocalTime skip = horasDoctor.getHoralibre();
                     for(int x=0;x<fechasAtienden.size();x++){
                         // Create a formatter with the desired date pattern
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                        String parsedTime = currentTime.format(formatter3);
                         String dateString = fechasAtienden.get(x).format(formatter);
-                        List<String> horasOcupadas = citaRepository.horasCitasProgramdas(dateString, dni);
+                        List<String> horasOcupadas = citaRepository.horasCitasProgramdas(dateString, dni,parsedTime);
                         List<LocalTime> horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
                         for(int j=0;j<horasOcupadas.size();j++){
                             String timeString = horasOcupadas.get(j);
