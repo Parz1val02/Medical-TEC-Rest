@@ -25,7 +25,7 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "inner join usuario P on C.paciente_dni=P.dni\n" +
            "inner join seguros Z on P.seguros_id_seguro=Z.id_seguro\n" +
            "inner join estadoscita W on C.estadoscita_idestados=W.idestados\n" +
-           "where str_to_date(fecha, '%d-%m-%Y')>= current_date() and citacancelada=0 and estadoscita_idestados in (1,2,4,5) and paciente_dni=?1 and modalidad=\"Virtual\"")
+           "where str_to_date(fecha, '%d-%m-%Y')>= current_date() and citacancelada=0 and estadoscita_idestados!=3 and paciente_dni=?1 and modalidad=\"Virtual\" and C.tipocita_idtipocita=1")
    List<Citadto> historialCitasAgendadasVirtual(String dniPaciente);
    @Query(nativeQuery = true, value = "SELECT C.idcita as `Citaid`, S.nombre as `Sede`, E.nombre_especialidad as `Title`, formapago as `FormaPago`, modalidad as `Modalidad`, T.tipo_cita as `TipoCita`,fecha as `Start`, hora as `Hora`, concat(D.nombre,\" \",D.apellido) as `Doctor`, G.nombreconsultorio as `Extra`, C.pagada as `Pagada`,(Z.porc_seguro*T.precio)/100 as `Precio`, S.direccion as `Direccion`, W.tipo as `Estado`\n" +
            "FROM cita C\n" +
@@ -38,8 +38,8 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "inner join usuario P on C.paciente_dni=P.dni\n" +
            "inner join seguros Z on P.seguros_id_seguro=Z.id_seguro\n" +
            "inner join estadoscita W on C.estadoscita_idestados=W.idestados\n" +
-           "where str_to_date(fecha, '%d-%m-%Y')>= current_date() and citacancelada=0 and estadoscita_idestados in (1,2,4,5) and paciente_dni=?1 and modalidad=\"Presencial\";")
-   List<Citadto> historialCitasAgendadasPresencial(String dniPaciente);
+           "where str_to_date(fecha, '%d-%m-%Y')>= current_date() and citacancelada=0 and estadoscita_idestados in (1,2,4,5) and paciente_dni=?1 and modalidad=\"Presencial\" and C.tipocita_idtipocita=1 and lower(H.mes)=?2")
+   List<Citadto> historialCitasAgendadasPresencial(String dniPaciente, String mes);
 
    @Query(nativeQuery = true, value = "SELECT C.idcita as `Citaid`, S.nombre as `Sede`, E.nombre as `Title`, formapago as `FormaPago`, modalidad as `Modalidad`, T.tipo_cita as `TipoCita`,fecha as `Start`, hora as `Hora`, concat(D.nombre,\" \",D.apellido) as `Doctor`, G.nombreconsultorio as `Extra`, C.pagada as `Pagada`, (Z.porc_seguro*E.precio)/100 as `Precio`, S.direccion as `Direccion`, W.tipo as `Estado`\n" +
            "FROM cita C\n" +
@@ -52,8 +52,8 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "inner join usuario P on C.paciente_dni=P.dni\n" +
            "inner join seguros Z on P.seguros_id_seguro=Z.id_seguro\n" +
            "inner join estadoscita W on C.estadoscita_idestados=W.idestados\n" +
-           "where str_to_date(fecha, '%d-%m-%Y')>= current_date() and citacancelada=0 and estadoscita_idestados in (1,2,4,5) and paciente_dni=?1")
-   List<Citadto> historialExamenesAgendados(String dniPaciente);
+           "where str_to_date(fecha, '%d-%m-%Y')>= current_date() and citacancelada=0 and estadoscita_idestados in (1,2,4,5) and paciente_dni=?1 and C.tipocita_idtipocita=2 and lower(H.mes)=?2")
+   List<Citadto> historialExamenesAgendados(String dniPaciente, String mes);
 
    @Query(nativeQuery = true, value = "SELECT C.idcita as `ID`, S.nombre as `Sede`, E.nombre_especialidad as `Especialidad`, formapago as `FormaPago`, modalidad as `Modalidad`, T.tipo_cita as `Title`,fecha as `Start`, hora as `Hora`, concat(P.nombre,\" \",P.apellido) as `Paciente`,(Z.porc_doctor*T.precio)/100 as `Pago`, W.tipo as `Estado` FROM cita C\n" +
            "inner join sedes S on C.sedes_idsedes=S.idsedes\n" +
@@ -62,7 +62,7 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "inner join usuario P on C.paciente_dni=P.dni\n" +
            "inner join seguros Z on P.seguros_id_seguro=Z.id_seguro\n" +
            "inner join estadoscita W on C.estadoscita_idestados=W.idestados\n" +
-           "where citacancelada=0 and doctor_dni1=?1")
+           "where citacancelada=0 and doctor_dni1=?1 and C.tipocita_idtipocita=1")
    List<CitaDoctor> historialCitasDoctor(String dniDoctor);
 
    @Query(nativeQuery = true, value = "SELECT C.idcita as `ID`, S.nombre as `Sede`, E.nombre as `Especialidad`, formapago as `FormaPago`, modalidad as `Modalidad`, T.tipo_cita as `Title`,fecha as `Start`, hora as `Hora`, concat(P.nombre,\" \",P.apellido) as `Paciente`, (Z.porc_doctor*E.precio)/100 as `Precio`, W.tipo as `Estado` FROM cita C\n" +
@@ -72,7 +72,7 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "inner join usuario P on C.paciente_dni=P.dni\n" +
            "inner join seguros Z on P.seguros_id_seguro=Z.id_seguro\n" +
            "inner join estadoscita W on C.estadoscita_idestados=W.idestados\n" +
-           "where citacancelada=0 and doctor_dni1=?1")
+           "where citacancelada=0 and doctor_dni1=?1 and C.tipocita_idtipocita=2")
    List<CitaDoctor>historialExamenesDoctor(String dni);
 
    @Query(nativeQuery = true, value = "SELECT C.idcita as `ID`, E.nombre_especialidad as `Especialidad`, formapago as `FormaPago`, modalidad as `Modalidad`, T.tipo_cita as `Title`,fecha as `Start`, hora as `Hora`, concat(P.nombre,\" \",P.apellido) as `Paciente`, concat(D.nombre,\" \",D.apellido) as `Doctor`, W.tipo as `Estado` FROM cita C\n" +
@@ -82,7 +82,7 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "inner join usuario P on C.paciente_dni=P.dni\n" +
            "inner join usuario D on C.doctor_dni1=D.dni\n" +
            "inner join estadoscita W on C.estadoscita_idestados=W.idestados\n" +
-           "where citacancelada=0 and C.sedes_idsedes=?1")
+           "where citacancelada=0 and C.sedes_idsedes=?1 and C.tipocita_idtipocita=1")
    List<CitasSede> historialCitasSede(String idSede);
 
    @Query(nativeQuery = true, value = "SELECT C.idcita as `ID`, E.nombre as `Especialidad`, formapago as `FormaPago`, modalidad as `Modalidad`, T.tipo_cita as `Title`,fecha as `Start`, hora as `Hora`, concat(P.nombre,\" \",P.apellido) as `Paciente`, concat(D.nombre,\" \",D.apellido) as `Doctor`, W.tipo as `Estado` FROM cita C\n" +
@@ -92,7 +92,7 @@ public interface CitaRepository extends JpaRepository<Cita, Integer> {
            "inner join usuario P on C.paciente_dni=P.dni\n" +
            "inner join usuario D on C.doctor_dni1=D.dni\n" +
            "inner join estadoscita W on C.estadoscita_idestados=W.idestados\n" +
-           "where citacancelada=0 and C.sedes_idsedes=?1")
+           "where citacancelada=0 and C.sedes_idsedes=?1 and C.tipocita_idtipocita=2")
    List<CitasSede> historialExamenesSede(String idSede);
 
    @Query(nativeQuery = true, value = "SELECT DATE_FORMAT(hora, '%H:%i') FROM cita  where fecha=?1 and doctor_dni1=?2 and citacancelada=0 and DATE_FORMAT(hora, '%H:%i')>?3")

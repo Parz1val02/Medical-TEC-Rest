@@ -54,9 +54,16 @@ public class RController {
 
     @GetMapping(value = "/citas")
     public List<Citadto> returnCitas(@RequestParam("dni")String dni){
+        // Get the current date and time in America/Lima timezone
+        Fechas fechasFunciones = new Fechas();
+        ZoneId limaZone = ZoneId.of("America/Lima");
+        LocalDate currentDate = LocalDate.now(limaZone);
+        String month = currentDate.getMonth().name();
+        String mes = fechasFunciones.traducirMes(month);
+
         List<Citadto> consultasVirtuales = citaRepository.historialCitasAgendadasVirtual(dni);
-        List<Citadto> consultasPresenciales = citaRepository.historialCitasAgendadasPresencial(dni);
-        List<Citadto> examenes = citaRepository.historialExamenesAgendados(dni);
+        List<Citadto> consultasPresenciales = citaRepository.historialCitasAgendadasPresencial(dni, mes.toLowerCase());
+        List<Citadto> examenes = citaRepository.historialExamenesAgendados(dni, mes.toLowerCase());
         List<Citadto> consultas = Stream.concat(consultasPresenciales.stream(), consultasVirtuales.stream()).toList();
         return Stream.concat(consultas.stream(), examenes.stream()).toList();
     }
