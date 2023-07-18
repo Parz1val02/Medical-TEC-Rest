@@ -15,6 +15,12 @@ import java.util.List;
 public interface CitaRepository extends JpaRepository<Cita, Integer> {
 
 
+   @Modifying
+   @Transactional
+   @Query(nativeQuery = true, value = "update cita set citacancelada=1 where idcita=?1")
+   void cancelarCita(Integer id);
+   @Query(value = "SELECT * FROM telesystem_2.cita where fecha=?1 and pagada=0 and citacancelada=0 and TIME_FORMAT(hora, '%H:%i')>?2", nativeQuery = true)
+   List<Cita> citasAutomatico(String fecha, String hora);
    @Query(nativeQuery = true, value = "SELECT C.idcita as `Citaid`, S.nombre as `Sede`, E.nombre_especialidad as `Title`, formapago as `FormaPago`, modalidad as `Modalidad`, T.tipo_cita as `TipoCita`,fecha as `Start`, hora as `Hora`, concat(D.nombre,\" \",D.apellido) as `Doctor`, R.enlace as `Extra`, C.pagada as `Pagada`, (Z.porc_seguro*T.precio)/100 as `Precio`, S.direccion as `Direccion`, W.tipo as `Estado`\n" +
            "FROM cita C\n" +
            "inner join sedes S on C.sedes_idsedes=S.idsedes\n" +

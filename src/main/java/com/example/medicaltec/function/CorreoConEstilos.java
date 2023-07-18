@@ -90,6 +90,19 @@ public class CorreoConEstilos {
 
     }
 
+    public void sendEmailEstilos2(String toEmail,String subject,String body) throws MessagingException {
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setFrom("telesystemclinic@gmail.com");
+        helper.setTo(toEmail);
+        helper.setSubject(subject);
+        helper.setText(body, true);
+
+        mailSender.send(message);
+
+    }
     public void sendEmailNotification(String subject, Usuario usuario, Cita cita ) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
