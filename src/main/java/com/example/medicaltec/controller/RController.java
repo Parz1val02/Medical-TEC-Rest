@@ -134,7 +134,6 @@ public class RController {
             ZoneId limaZone = ZoneId.of("America/Lima");
             LocalDate currentDate = LocalDate.now(limaZone);
             LocalTime currentTime = LocalTime.now(limaZone);
-            currentTime = currentTime.plusMinutes(14);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
             DateTimeFormatter formatter3 = DateTimeFormatter.ofPattern("HH:mm");
@@ -189,7 +188,7 @@ public class RController {
                                             .withSecond(0)
                                             .withNano(0);
                                 }
-                                horasTrabajo = timeListGenerationExample.generateTimeList(closestTime, end, skip);
+                                horasTrabajo = timeListGenerationExample.generateTimeList(closestTime.plusMinutes(60).withSecond(0).withNano(0), end, skip);
                             }else{
                                 horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni());
                                 horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
@@ -269,7 +268,7 @@ public class RController {
                                             .withSecond(0)
                                             .withNano(0);
                                 }
-                                horasTrabajo = timeListGenerationExample.generateTimeList(closestTime, end, skip);
+                                horasTrabajo = timeListGenerationExample.generateTimeList(closestTime.plusMinutes(60).withSecond(0).withNano(0), end, skip);
                             }else{
                                 horasOcupadas = citaRepository.horasCitasProgramdas(fecha, doctoresAtienden.get(i).getDni());
                                 horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
@@ -391,7 +390,6 @@ public class RController {
             // Extract local date and time components
             LocalDate currentDate = limaDateTime.toLocalDate();
             LocalTime currentTime = limaDateTime.toLocalTime();
-            currentTime = currentTime.plusMinutes(14);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -508,7 +506,6 @@ public class RController {
                 // Extract local date and time components
                 LocalDate currentDate = limaDateTime.toLocalDate();
                 LocalTime currentTime = limaDateTime.toLocalTime();
-                currentTime = currentTime.plusMinutes(14);
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
                 DateTimeFormatter formatter3 = DateTimeFormatter.ofPattern("HH:mm");
@@ -565,7 +562,7 @@ public class RController {
                                         .withSecond(0)
                                         .withNano(0);
                             }
-                            horasTrabajo = timeListGenerationExample.generateTimeList(closestTime, end, skip);
+                            horasTrabajo = timeListGenerationExample.generateTimeList(closestTime.plusMinutes(60).withSecond(0).withNano(0), end, skip);
                         }else{
                             horasOcupadas = citaRepository.horasCitasProgramdas(dateString, dni);
                             horasTrabajo = timeListGenerationExample.generateTimeList(start, end, skip);
